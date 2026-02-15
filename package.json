@@ -33,5 +33,5 @@
     "globals": "^16.5.0",
     "rollup-plugin-visualizer": "^6.0.5",
     "vite": "^7.3.1"
-  }  
+  }
 }

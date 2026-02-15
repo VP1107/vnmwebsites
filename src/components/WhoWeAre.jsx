@@ -47,7 +47,7 @@ const WhoWeAre = () => {
                     aria-hidden="true"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 >
-                    <source src={`${import.meta.env.BASE_URL}videos/coding-montage.mp4`} type="video/mp4" />
+                    <source src={`${import.meta.env.BASE_URL}videos/intro.mp4`} type="video/mp4" />
                 </video>
 
                 {/* Video Placeholder (Visible if video fails or is missing) */}

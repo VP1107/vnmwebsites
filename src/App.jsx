@@ -23,24 +23,24 @@ function App() {
           <ErrorBoundary>
             {/* Critical: Load immediately */}
             <Hero />
-            
+
             {/* Progressive loading with individual suspense boundaries */}
             <Suspense fallback={<LoadingFallback />}>
               <AboutSection />
             </Suspense>
-            
+
             <Suspense fallback={<LoadingFallback />}>
               <WorkShowcase />
             </Suspense>
-            
+
             <Suspense fallback={<LoadingFallback />}>
               <WhatWeDo />
             </Suspense>
-            
+
             <Suspense fallback={<LoadingFallback />}>
               <ContactForm />
             </Suspense>
-            
+
             <Suspense fallback={<LoadingFallback />}>
               <Footer />
             </Suspense>
