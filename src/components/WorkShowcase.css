@@ -1,0 +1,23 @@
+.work-showcase {
+  background: #111;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.work-showcase h2 {
+  font-size: clamp(36px, 6vw, 72px);
+  font-family: var(--font-accent);
+  text-transform: uppercase;
+}
+
+.work-showcase p {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 600px;
+  text-align: center;
+  padding: 0 2rem;
+}

@@ -1,0 +1,27 @@
+.tech-stack {
+  background: #000;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.tech-stack h2 {
+  font-size: clamp(36px, 6vw, 72px);
+  font-family: var(--font-accent);
+  text-transform: uppercase;
+}
+
+.tech-stack-container {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0 2rem;
+}
+
+.tech-stack-container span {
+  font-size: 20px;
+}

@@ -1,0 +1,46 @@
+.custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    pointer-events: none;
+    z-index: 10000;
+    mix-blend-mode: difference;
+    /* Transformation handled by JS, but we need initial centering logic in JS or here. 
+       JS handles translate3d(x,y,0) translate(-50%, -50%). */
+    will-change: transform;
+    transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease;
+}
+
+.custom-cursor-follower {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    pointer-events: none;
+    z-index: 9999;
+    /* Transformation handled by JS */
+    will-change: transform;
+    transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Hover States */
+.cursor-hover {
+    width: 20px;
+    height: 20px;
+    background-color: var(--color-accent-green);
+    mix-blend-mode: normal;
+}
+
+.cursor-hover-follower {
+    width: 60px;
+    height: 60px;
+    border-color: var(--color-accent-green);
+    background-color: rgba(0, 255, 136, 0.1);
+}
