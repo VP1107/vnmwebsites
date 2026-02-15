@@ -76,7 +76,7 @@ const VideoIntro = () => {
                 loop
                 muted
                 playsInline
-                poster="/images/responsive_mockup.webp"
+                poster={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
                 style={{
                     position: 'absolute',
                     top: '50%',
@@ -91,7 +91,7 @@ const VideoIntro = () => {
                     filter: 'brightness(0.5)'
                 }}
             >
-                <source src="/videos/intro.mp4" type="video/mp4" />
+                <source src={`${import.meta.env.BASE_URL}videos/intro.mp4`} type="video/mp4" />
             </video>
 
             {/* Dark Overlay */}

@@ -79,7 +79,7 @@ const SplitPhotos = () => {
             >
                 {/* Photo Vatsal */}
                 <img
-                    src="/images/responsive_mockup.webp"
+                    src={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
                     alt="Vatsal"
                     style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(20%)' }}
                 />
@@ -130,7 +130,7 @@ const SplitPhotos = () => {
             >
                 {/* Photo Mann */}
                 <img
-                    src="/images/responsive_mockup.webp"
+                    src={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
                     alt="Mann"
                     style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(20%)' }}
                 />

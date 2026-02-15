@@ -95,7 +95,7 @@ const FinalCTA = () => {
                 loop
                 muted
                 playsInline
-                poster="/images/responsive_mockup.webp"
+                poster={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
                 style={{
                     position: 'absolute',
                     top: '50%',
@@ -110,7 +110,7 @@ const FinalCTA = () => {
                     filter: 'brightness(0.3) blur(2px)'
                 }}
             >
-                <source src="/videos/FinalCTA.mp4" type="video/mp4" />
+                <source src={`${import.meta.env.BASE_URL}videos/FinalCTA.mp4`} type="video/mp4" />
             </video>
 
             {/* Gradient Overlay */}

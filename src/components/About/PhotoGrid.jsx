@@ -133,7 +133,7 @@ const PhotoGrid = () => {
                     >
                         {/* Photo Content */}
                         <img
-                            src="/images/responsive_mockup.webp"
+                            src={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
                             alt={`Workspace ${index + 1}`}
                             style={{
                                 width: '100%',

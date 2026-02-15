@@ -117,7 +117,7 @@ const DesignVideo = () => {
                     filter: 'brightness(0.6)'
                 }}
             >
-                <source src="/videos/design-process.mp4" type="video/mp4" />
+                <source src={`${import.meta.env.BASE_URL}videos/design-process.mp4`} type="video/mp4" />
             </video>
 
             {/* Gradient Overlay for legibility */}

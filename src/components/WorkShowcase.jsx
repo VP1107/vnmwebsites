@@ -10,7 +10,7 @@ const projects = [
     category: "Garbhasanskar & Prenatal Care",
     description: "Comprehensive prenatal care platform with canvas-based particle animations, expert profiles, and community features.",
     stack: ["HTML", "CSS", "JS", "Google Apps Script"],
-    image: "/images/babybloom-screenshot.webp",
+    image: `${import.meta.env.BASE_URL}images/babybloom-screenshot.webp`,
     link: "#" // Add actual links if available
   },
   {
@@ -18,7 +18,7 @@ const projects = [
     category: "Professional Portfolio",
     description: "A professional, minimalistic multi-page portfolio designed for clean aesthetics and clarity.",
     stack: ["HTML", "CSS"],
-    image: "/images/manan-shah-screenshot.webp",
+    image: `${import.meta.env.BASE_URL}images/manan-shah-screenshot.webp`,
     link: "#"
   },
   {
@@ -26,7 +26,7 @@ const projects = [
     category: "Catering Business",
     description: "A premium catering service platform featuring elegant menu showcases, interactive booking forms, and a seamless mobile-responsive design.",
     stack: ["HTML", "CSS", "JS"],
-    image: "/images/chef4u-screenshot.webp",
+    image: `${import.meta.env.BASE_URL}images/chef4u-screenshot.webp`,
     link: "#"
   },
   {
@@ -34,7 +34,7 @@ const projects = [
     category: "Business Landing Page",
     description: "A professional corporate UI clone focused on high-end design aesthetics.",
     stack: ["HTML", "CSS"],
-    image: "/images/renav-official-screenshot.webp",
+    image: `${import.meta.env.BASE_URL}images/renav-official-screenshot.webp`,
     link: "#"
   },
   {
@@ -42,7 +42,7 @@ const projects = [
     category: "App Interface Demo",
     description: "A complex UI demo for a messaging application with glassmorphism effects.",
     stack: ["HTML", "CSS"],
-    image: "/images/renav-messenger-screenshot.webp",
+    image: `${import.meta.env.BASE_URL}images/renav-messenger-screenshot.webp`,
     link: "#"
   }
 ];
