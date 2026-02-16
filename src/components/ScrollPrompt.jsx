@@ -57,14 +57,14 @@ const ScrollPrompt = () => {
                     height="40"
                     rx="10"
                     fill="none"
-                    stroke="#00ff88"
+                    stroke="#38bdf8"
                     strokeWidth="2"
                 />
                 <circle
                     cx="15"
                     cy="15"
                     r="3"
-                    fill="#00ff88"
+                    fill="#38bdf8"
                 >
                     <animate
                         attributeName="cy"

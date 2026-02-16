@@ -66,9 +66,32 @@ const VideoIntro = () => {
                 height: '100vh',
                 position: 'relative',
                 overflow: 'hidden',
-                background: '#050505'
+                background: '#000000'
             }}
         >
+            {/* Top Fade Gradient */}
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '200px',
+                background: 'linear-gradient(to bottom, #000000, transparent)',
+                zIndex: 4,
+                pointerEvents: 'none'
+            }} />
+
+            {/* Bottom Fade Gradient */}
+            <div style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                width: '100%',
+                height: '200px',
+                background: 'linear-gradient(to top, #000000, transparent)',
+                zIndex: 4,
+                pointerEvents: 'none'
+            }} />
             {/* Background Video */}
             <video
                 ref={videoRef}
@@ -136,9 +159,9 @@ const VideoIntro = () => {
                 <div style={{
                     width: '100px',
                     height: '3px',
-                    background: 'linear-gradient(90deg, #00ff88, #00d4ff)',
+                    background: 'linear-gradient(90deg, #38bdf8, #00d4ff)',
                     margin: '0 auto',
-                    boxShadow: '0 0 20px #00ff88'
+                    boxShadow: '0 0 20px #38bdf8'
                 }} />
             </div>
         </div>

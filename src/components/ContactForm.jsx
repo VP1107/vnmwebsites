@@ -17,8 +17,8 @@ const ContactForm = () => {
         const label = field.previousElementSibling;
 
         gsap.to(field, {
-            boxShadow: '0 0 30px 10px rgba(0, 255, 136, 0.6)',
-            borderColor: '#00ff88',
+            boxShadow: '0 0 30px 10px rgba(56, 189, 248, 0.6)',
+            borderColor: '#38bdf8',
             scale: 1.02,
             duration: 0.6,
             ease: 'elastic.out(1, 0.6)',
@@ -28,7 +28,7 @@ const ContactForm = () => {
             gsap.to(label, {
                 y: -30,
                 scale: 0.85,
-                color: '#00ff88',
+                color: '#38bdf8',
                 duration: 0.4,
                 ease: 'back.out(1.7)',
             });
@@ -50,7 +50,7 @@ const ContactForm = () => {
         }
 
         gsap.to(field, {
-            boxShadow: '0 0 0 0 rgba(0, 255, 136, 0)',
+            boxShadow: '0 0 0 0 rgba(56, 189, 248, 0)',
             borderColor: 'rgba(255, 255, 255, 0.2)',
             scale: 1,
             duration: 0.3,
@@ -171,7 +171,7 @@ const ContactForm = () => {
                         onMouseEnter={(e) => {
                             gsap.to(e.currentTarget, {
                                 scale: 1.1,
-                                boxShadow: '0 20px 60px rgba(0, 255, 136, 0.5)',
+                                boxShadow: '0 20px 60px rgba(56, 189, 248, 0.5)',
                                 duration: 0.3,
                                 ease: 'power2.out',
                             });
@@ -179,7 +179,7 @@ const ContactForm = () => {
                         onMouseLeave={(e) => {
                             gsap.to(e.currentTarget, {
                                 scale: 1,
-                                boxShadow: '0 10px 30px rgba(0, 255, 136, 0.3)',
+                                boxShadow: '0 10px 30px rgba(56, 189, 248, 0.3)',
                                 duration: 0.3,
                                 ease: 'power2.out',
                             });

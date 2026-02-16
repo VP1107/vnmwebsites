@@ -29,9 +29,9 @@ const AnimatedBackground = () => {
           linear-gradient(
             135deg,
             #000000 0%,
-            #00ff88 25%,
+            #38bdf8 25%,
             #00d4ff 50%,
-            #ff0080 75%,
+            #007bff 75%,
             #000000 100%
           )
         `,

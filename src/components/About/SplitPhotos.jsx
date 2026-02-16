@@ -72,8 +72,8 @@ const SplitPhotos = () => {
                     height: '60vh',
                     borderRadius: '20px',
                     overflow: 'hidden',
-                    boxShadow: '0 30px 100px rgba(0, 255, 136, 0.2)',
-                    border: '1px solid rgba(0, 255, 136, 0.3)',
+                    boxShadow: '0 30px 100px rgba(56, 189, 248, 0.2)',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
                     background: '#111'
                 }}
             >
@@ -93,10 +93,10 @@ const SplitPhotos = () => {
                     padding: '15px 25px',
                     borderRadius: '10px',
                     backdropFilter: 'blur(10px)',
-                    borderLeft: '4px solid #00ff88'
+                    borderLeft: '4px solid #38bdf8'
                 }}>
                     <p style={{
-                        color: '#00ff88',
+                        color: '#38bdf8',
                         fontSize: '12px',
                         textTransform: 'uppercase',
                         letterSpacing: '2px',
@@ -184,7 +184,7 @@ const SplitPhotos = () => {
                     color: '#ffffff',
                     textShadow: '0 0 40px rgba(0, 0, 0, 0.9)',
                     letterSpacing: '0.05em',
-                    WebkitTextStroke: '2px #00ff88',
+                    WebkitTextStroke: '2px #38bdf8',
                     WebkitTextFillColor: 'transparent',
                     fontFamily: '"Syne", sans-serif',
                     margin: 0

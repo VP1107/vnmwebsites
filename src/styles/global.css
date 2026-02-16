@@ -1,5 +1,5 @@
 /* ==========================================
-   V&M Websites - Global Design System
+   V&M Creations - Global Design System
    Cyberpunk-inspired Portfolio
    ========================================== */
 
@@ -7,11 +7,18 @@
     /* ===== Color Palette ===== */
     --color-bg: #000000;
     --color-text: #ffffff;
-    --color-accent-green: #00ff88;
-    --color-accent-pink: #ff0080;
+    --color-accent-green: #38bdf8;
+    /* Blue */
+    --color-accent-pink: #0ea5e9;
+    /* Darker Blue */
     --color-accent-cyan: #00d4ff;
-    --gradient-cyber: linear-gradient(135deg, #00ff88, #00d4ff, #ff0080);
-    --gradient-cyber-reverse: linear-gradient(135deg, #ff0080, #00d4ff, #00ff88);
+    /* KEEP CYAN */
+    --gradient-cyber: linear-gradient(135deg, #38bdf8, #00d4ff, #0ea5e9);
+    --gradient-cyber-reverse: linear-gradient(135deg, #0ea5e9, #00d4ff, #38bdf8);
+
+    /* ===== Logo Palette ===== */
+    --accent: #38bdf8;
+    --text-primary: #ffffff;
 
     /* ===== Typography ===== */
     --font-display: 'Syne', system-ui, sans-serif;
@@ -34,8 +41,10 @@
     /* 64px */
 
     /* ===== Effects ===== */
-    --glow-green: 0 0 20px rgba(0, 255, 136, 0.5);
-    --glow-pink: 0 0 20px rgba(255, 0, 128, 0.5);
+    --glow-green: 0 0 20px rgba(56, 189, 248, 0.5);
+    /* Blue Glow */
+    --glow-pink: 0 0 20px rgba(14, 165, 233, 0.5);
+    /* Darker Blue Glow */
     --glow-cyan: 0 0 20px rgba(0, 212, 255, 0.5);
     --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
     --transition-elastic: cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -51,7 +60,6 @@
 }
 
 html {
-    scroll-behavior: smooth;
     overflow-x: hidden;
 }
 

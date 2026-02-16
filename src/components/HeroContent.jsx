@@ -1,5 +1,6 @@
 import { useRef, useEffect, forwardRef, memo } from 'react';
 import { gsap } from 'gsap';
+import SplitType from 'split-type';
 
 const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
     const titleRef = useRef(null);
@@ -7,26 +8,43 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
     const ctaRef = useRef(null);
 
     useEffect(() => {
-        if (!isLoaded || !titleRef.current) return;
+        if (!isLoaded || !titleRef.current || !subtitleRef.current) return;
+
+        // Split text into characters and words
+        const titleSplit = new SplitType(titleRef.current, {
+            types: 'chars',
+            tagName: 'span'
+        });
+
+        const subtitleSplit = new SplitType(subtitleRef.current, {
+            types: 'words',
+            tagName: 'span'
+        });
 
         const tl = gsap.timeline({ delay: 1.5 });
 
         // Animate V&M (Slide up + fade)
-        tl.from(titleRef.current.querySelector('.vm-text'), {
-            y: 80,
-            opacity: 0,
-            duration: 1.2,
-            ease: 'power3.out'
-        });
+        const vmText = titleRef.current.querySelector('.vm-text');
+        if (vmText) {
+            tl.from(vmText, {
+                y: 80,
+                opacity: 0,
+                duration: 1.2,
+                ease: 'power3.out'
+            });
+        }
 
         // Animate WEBSITES (Slide up + fade + spread)
-        tl.from(titleRef.current.querySelector('.websites-text'), {
-            y: 40,
-            opacity: 0,
-            letterSpacing: '0.5em',
-            duration: 1.4,
-            ease: 'power3.out'
-        }, '-=0.8');
+        const websitesText = titleRef.current.querySelector('.websites-text');
+        if (websitesText) {
+            tl.from(websitesText, {
+                y: 40,
+                opacity: 0,
+                letterSpacing: '0.5em',
+                duration: 1.4,
+                ease: 'power3.out'
+            }, '-=0.8');
+        }
 
         // Subtitle
         tl.from(subtitleRef.current, {
@@ -47,6 +65,12 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
             }, '-=0.4');
         }
 
+        // Cleanup
+        return () => {
+            titleSplit.revert();
+            subtitleSplit.revert();
+            tl.kill();
+        };
     }, [isLoaded]);
 
     return (
@@ -85,10 +109,11 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
                     style={{
                         fontSize: 'clamp(80px, 15vw, 220px)',
                         display: 'block',
-                        background: 'linear-gradient(to bottom, #ffffff, #aaaaaa)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        filter: 'drop-shadow(0 0 40px rgba(0,255,136,0.3))'
+                        color: '#ffffff',
+                        textShadow: '0 0 30px rgba(56, 189, 248, 0.8), 0 0 10px rgba(255, 255, 255, 0.8)',
+                        background: 'none',
+                        WebkitTextFillColor: 'initial',
+                        filter: 'none'
                     }}
                 >
                     V&M
@@ -99,12 +124,12 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
                         fontSize: 'clamp(30px, 6vw, 90px)',
                         display: 'block',
                         color: 'transparent',
-                        WebkitTextStroke: '2px rgba(255,255,255,0.8)', // Outlined
+                        WebkitTextStroke: '2px rgba(255,255,255,0.8)',
                         letterSpacing: '0.02em',
                         marginTop: '-2%'
                     }}
                 >
-                    WEBSITES
+                    CREATIONS
                 </span>
             </h1>
 
@@ -140,5 +165,7 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
         </div>
     );
 }));
+
+HeroContent.displayName = 'HeroContent';
 
 export default HeroContent;

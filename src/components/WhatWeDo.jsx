@@ -17,7 +17,7 @@ const WhatWeDo = () => {
             subtitle: 'Logo • Identity • Motion',
             videoSrc: `${import.meta.env.BASE_URL}videos/intro.mp4`, // Placeholder
             description: 'Visual identities that stick in minds',
-            color: '#00ff88'
+            color: '#38bdf8'
         },
         {
             id: 2,
@@ -33,7 +33,7 @@ const WhatWeDo = () => {
             subtitle: 'Creative • Professional • Personal',
             videoSrc: `${import.meta.env.BASE_URL}videos/design-process.mp4`, // Placeholder
             description: 'Showcase your work beautifully',
-            color: '#ff0080'
+            color: '#0ea5e9'
         }
     ];
 

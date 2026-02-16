@@ -6,4 +6,15 @@ import { visualizer } from "rollup-plugin-visualizer";
 export default defineConfig({
   plugins: [react(), visualizer({ open: true })],
   base: "/vnmwebsites/",
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'gsap-vendor': ['gsap', '@gsap/react', 'gsap/ScrollTrigger'],
+          'particles-vendor': ['@tsparticles/react', '@tsparticles/slim']
+        }
+      }
+    }
+  }
 });

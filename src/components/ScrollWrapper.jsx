@@ -1,28 +1,46 @@
 import { useEffect, useRef } from 'react';
-import LocomotiveScroll from 'locomotive-scroll';
-import 'locomotive-scroll/dist/locomotive-scroll.css';
+import Lenis from 'lenis';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 const ScrollWrapper = ({ children }) => {
-    const scrollRef = useRef(null);
+    const lenisRef = useRef(null);
 
     useEffect(() => {
-        if (!scrollRef.current) return;
-
-        const scroll = new LocomotiveScroll({
-            el: scrollRef.current,
+        // Initialize Lenis
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
             smooth: true,
-            lerp: 0.1, // Linear interpolation - lower is smoother/slower
-            multiplier: 1, // Scroll speed
-            class: 'is-revealed', // CSS class added to elements when in view
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
         });
 
+        lenisRef.current = lenis;
+
+        // Connect Lenis to GSAP ScrollTrigger
+        lenis.on('scroll', ScrollTrigger.update);
+
+        // Add Lenis to GSAP Ticker
+        gsap.ticker.add((time) => {
+            lenis.raf(time * 1000);
+        });
+
+        // Disable GSAP ticker lag smoothing for smoother scroll
+        gsap.ticker.lagSmoothing(0);
+
         return () => {
-            if (scroll) scroll.destroy();
+            // Cleanup
+            gsap.ticker.remove(lenis.raf);
+            lenis.destroy();
         };
     }, []);
 
     return (
-        <div data-scroll-container ref={scrollRef}>
+        <div className="scroll-wrapper">
             {children}
         </div>
     );

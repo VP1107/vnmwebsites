@@ -1,4 +1,4 @@
-import gsap from 'gsap';
+import { gsap } from 'gsap';
 
 /**
  * Scramble text effect - morphs random characters into final text

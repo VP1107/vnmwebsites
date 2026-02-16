@@ -1,4 +1,4 @@
-import gsap from 'gsap';
+import { gsap } from 'gsap';
 
 /**
  * Create particle explosion animation
@@ -7,7 +7,7 @@ import gsap from 'gsap';
  * @param {string[]} colors - Array of particle colors
  * @returns {HTMLElement[]} Array of particle elements
  */
-export const createParticleExplosion = (container, count = 200, colors = ['#00ff88', '#00d4ff', '#ff0080']) => {
+export const createParticleExplosion = (container, count = 200, colors = ['#38bdf8', '#00d4ff', '#0ea5e9']) => {
     const particles = [];
 
     for (let i = 0; i < count; i++) {
@@ -74,12 +74,12 @@ export const createParticleBurst = (element, count = 30) => {
 
         particle.style.width = '4px';
         particle.style.height = '4px';
-        particle.style.backgroundColor = '#00ff88';
+        particle.style.backgroundColor = '#38bdf8';
         particle.style.position = 'absolute';
         particle.style.left = `${rect.left + rect.width / 2}px`;
         particle.style.top = `${rect.top + rect.height / 2}px`;
         particle.style.borderRadius = '50%';
-        particle.style.boxShadow = '0 0 10px #00ff88';
+        particle.style.boxShadow = '0 0 10px #38bdf8';
 
         container.appendChild(particle);
         particles.push(particle);
@@ -122,7 +122,7 @@ export const createMouseParticles = (container) => {
             particle.className = 'particle';
             particle.style.width = '3px';
             particle.style.height = '3px';
-            particle.style.backgroundColor = '#00ff88';
+            particle.style.backgroundColor = '#38bdf8';
             particle.style.position = 'fixed';
             particle.style.left = `${mouseX}px`;
             particle.style.top = `${mouseY}px`;

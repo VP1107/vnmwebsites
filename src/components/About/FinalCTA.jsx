@@ -53,7 +53,7 @@ const FinalCTA = () => {
                 buttonRef.current.addEventListener('mouseenter', () => {
                     gsap.to(buttonRef.current, {
                         scale: 1.1,
-                        boxShadow: '0 20px 60px rgba(0, 255, 136, 0.5)',
+                        boxShadow: '0 20px 60px rgba(56, 189, 248, 0.5)',
                         duration: 0.3,
                         ease: 'power2.out'
                     });
@@ -62,7 +62,7 @@ const FinalCTA = () => {
                 buttonRef.current.addEventListener('mouseleave', () => {
                     gsap.to(buttonRef.current, {
                         scale: 1,
-                        boxShadow: '0 10px 40px rgba(0, 255, 136, 0.3)',
+                        boxShadow: '0 10px 40px rgba(56, 189, 248, 0.3)',
                         duration: 0.3,
                         ease: 'power2.out'
                     });
@@ -85,9 +85,32 @@ const FinalCTA = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
-                background: '#0a0a0a'
+                background: '#000000'
             }}
         >
+            {/* Top Fade Gradient */}
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '250px',
+                background: 'linear-gradient(to bottom, #000000, transparent)',
+                zIndex: 4,
+                pointerEvents: 'none'
+            }} />
+
+            {/* Bottom Fade Gradient */}
+            <div style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                width: '100%',
+                height: '250px',
+                background: 'linear-gradient(to top, #000000, transparent)',
+                zIndex: 4,
+                pointerEvents: 'none'
+            }} />
             {/* Background Video */}
             <video
                 ref={videoRef}
@@ -144,8 +167,8 @@ const FinalCTA = () => {
                 >
                     Ready to build something<br />
                     <span style={{
-                        color: '#00ff88',
-                        WebkitTextStroke: '1px #00ff88',
+                        color: '#38bdf8',
+                        WebkitTextStroke: '1px #38bdf8',
                         fontStyle: 'italic'
                     }}>
                         extraordinary?
@@ -159,12 +182,12 @@ const FinalCTA = () => {
                         padding: '20px 50px',
                         fontSize: 'max(16px, 1.5vw)',
                         fontWeight: 700,
-                        background: 'linear-gradient(135deg, #00ff88, #00d4ff)',
+                        background: 'linear-gradient(135deg, #38bdf8, #00d4ff)',
                         color: '#000000',
                         border: 'none',
                         borderRadius: '50px',
                         cursor: 'pointer',
-                        boxShadow: '0 10px 40px rgba(0, 255, 136, 0.3)',
+                        boxShadow: '0 10px 40px rgba(56, 189, 248, 0.3)',
                         textTransform: 'uppercase',
                         letterSpacing: '1px',
                         fontFamily: '"Inter", sans-serif'

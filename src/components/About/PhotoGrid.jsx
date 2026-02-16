@@ -57,7 +57,7 @@ const PhotoGrid = () => {
                     gsap.to(photo, {
                         scale: 1.05,
                         zIndex: 10,
-                        boxShadow: '0 30px 80px rgba(0, 255, 136, 0.4)',
+                        boxShadow: '0 30px 80px rgba(56, 189, 248, 0.4)',
                         duration: 0.4,
                         ease: 'power2.out'
                     });

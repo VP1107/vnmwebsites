@@ -21,14 +21,14 @@ const MorphingLogo = ({ isLoaded }) => {
         // Continuous glow pulse - we store verification to kill it later if needed, 
         // but fading out the container handles it.
         const glowTween = gsap.to(pathRef.current, {
-            filter: 'drop-shadow(0 0 20px #00ff88) drop-shadow(0 0 40px #00ff88)',
+            filter: 'drop-shadow(0 0 20px #38bdf8) drop-shadow(0 0 40px #38bdf8)',
             duration: 2,
             repeat: -1,
             yoyo: true,
             ease: 'sine.inOut'
         });
         if (hasMorph) {
-                // Instead of morphing to letters, we fade out while the REAL text appears
+            // Instead of morphing to letters, we fade out while the REAL text appears
             tl.to(logoRef.current, {
                 opacity: 0,
                 duration: 1.5, // Gradual fade matching text reveal
@@ -39,17 +39,17 @@ const MorphingLogo = ({ isLoaded }) => {
                 }
             }, "+=0.2"); // Slight overlap
         } else {
-                tl.to(logoRef.current, {
-                    scale: 1, // Stay same size (don't move out)
-                    y: 0,     // Stay centered
-                    opacity: 0,
-                    duration: 1.5, // Gradual fade
-                    ease: 'power1.inOut',
-                    onComplete: () => {
-                        if (logoRef.current) logoRef.current.style.display = 'none';
-                        glowTween.kill();
-                    }
-                });
+            tl.to(logoRef.current, {
+                scale: 1, // Stay same size (don't move out)
+                y: 0,     // Stay centered
+                opacity: 0,
+                duration: 1.5, // Gradual fade
+                ease: 'power1.inOut',
+                onComplete: () => {
+                    if (logoRef.current) logoRef.current.style.display = 'none';
+                    glowTween.kill();
+                }
+            });
         }
     }, [isLoaded]);
     return (
@@ -82,9 +82,9 @@ const MorphingLogo = ({ isLoaded }) => {
                 />
                 <defs>
                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#00ff88" />
+                        <stop offset="0%" stopColor="#38bdf8" />
                         <stop offset="50%" stopColor="#00d4ff" />
-                        <stop offset="100%" stopColor="#ff0080" />
+                        <stop offset="100%" stopColor="#0ea5e9" />
                     </linearGradient>
                 </defs>
             </svg>

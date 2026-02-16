@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import Logo from './Logo';
 import './Footer.css';
 
 const Footer = () => {
@@ -61,7 +62,7 @@ const Footer = () => {
         <footer className="footer" ref={footerRef}>
             <div className="footer-content">
                 <div className="footer-item footer-brand">
-                    <h3 className="footer-title">V&M WEBSITES</h3>
+                    <Logo />
                     <p className="footer-tagline">Built with passion. Powered by coffee.</p>
                 </div>
 

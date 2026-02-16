@@ -6,6 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import ScrollWrapper from './components/ScrollWrapper';
 import './styles/global.css';
 import './styles/animations.css';
+import Logo from './components/Logo';
 
 // Lazy load heavy components
 const AboutSection = lazy(() => import('./components/About/AboutSection'));

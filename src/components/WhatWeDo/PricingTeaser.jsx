@@ -55,7 +55,7 @@ const PricingTeaser = () => {
 
             // Continuous glow pulse
             gsap.to(ctaRef.current, {
-                boxShadow: '0 0 40px rgba(0, 255, 136, 0.8)',
+                boxShadow: '0 0 40px rgba(56, 189, 248, 0.8)',
                 duration: 1.5,
                 repeat: -1,
                 yoyo: true,
@@ -77,10 +77,21 @@ const PricingTeaser = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 padding: '100px 5%',
-                background: 'linear-gradient(180deg, #000000 0%, #0a0a0a 100%)',
-                textAlign: 'center'
+                background: 'linear-gradient(180deg, #000000 0%, #000000 100%)',
+                textAlign: 'center',
+                position: 'relative'
             }}
         >
+            {/* Smooth transition from previous section */}
+            <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '150px',
+                background: 'linear-gradient(to bottom, #000000, transparent)',
+                pointerEvents: 'none'
+            }} />
             <p style={{
                 fontSize: 'clamp(18px, 2vw, 24px)',
                 color: '#a0a0a0',
@@ -97,9 +108,9 @@ const PricingTeaser = () => {
                 style={{
                     fontSize: 'clamp(60px, 12vw, 150px)',
                     fontWeight: 900,
-                    color: '#00ff88',
+                    color: '#38bdf8',
                     fontFamily: '"Syne", sans-serif',
-                    textShadow: '0 0 60px rgba(0, 255, 136, 0.5)',
+                    textShadow: '0 0 60px rgba(56, 189, 248, 0.5)',
                     marginBottom: '20px'
                 }}
             >
@@ -123,14 +134,14 @@ const PricingTeaser = () => {
                     padding: '20px 60px',
                     fontSize: '20px',
                     fontWeight: 700,
-                    background: 'linear-gradient(135deg, #00ff88, #00d4ff)',
+                    background: 'linear-gradient(135deg, #38bdf8, #00d4ff)',
                     color: '#000',
                     border: 'none',
                     borderRadius: '50px',
                     cursor: 'pointer',
                     textTransform: 'uppercase',
                     letterSpacing: '2px',
-                    boxShadow: '0 10px 40px rgba(0, 255, 136, 0.3)',
+                    boxShadow: '0 10px 40px rgba(56, 189, 248, 0.3)',
                     transition: 'transform 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
@@ -178,8 +189,8 @@ const PricingTeaser = () => {
                         }}
                     >
                         <svg width="20" height="20" viewBox="0 0 20 20">
-                            <circle cx="10" cy="10" r="9" fill="none" stroke="#00ff88" strokeWidth="2" />
-                            <path d="M6 10 L9 13 L14 7" fill="none" stroke="#00ff88" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <circle cx="10" cy="10" r="9" fill="none" stroke="#38bdf8" strokeWidth="2" />
+                            <path d="M6 10 L9 13 L14 7" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                         {item}
                     </div>

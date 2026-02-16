@@ -28,15 +28,15 @@ canvas {
 }
 
 .cta-primary {
-    background: linear-gradient(135deg, #00ff88, #00d4ff);
+    background: linear-gradient(135deg, #38bdf8, #00d4ff);
     color: #000;
-    box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+    box-shadow: 0 10px 30px rgba(56, 189, 248, 0.2);
 }
 
 .cta-secondary {
     background: transparent;
     color: #fff;
-    border: 2px solid #00ff88;
+    border: 2px solid #38bdf8;
 }
 
 .cta-primary:hover,

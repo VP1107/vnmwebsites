@@ -5,7 +5,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import VideoIntro from './VideoIntro';
 import SplitPhotos from './SplitPhotos';
 import DesignVideo from './DesignVideo';
-import PhotoGrid from './PhotoGrid';
 import FinalCTA from './FinalCTA';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -35,7 +34,6 @@ const AboutSection = () => {
             <VideoIntro />
             <SplitPhotos />
             <DesignVideo />
-            <PhotoGrid />
             <FinalCTA />
         </section>
     );

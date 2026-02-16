@@ -56,8 +56,8 @@ const SectionIntro = () => {
 
             // Continuous shimmer effect
             gsap.to(titleSplit.chars, {
-                color: '#00ff88',
-                textShadow: '0 0 20px #00ff88',
+                color: '#38bdf8',
+                textShadow: '0 0 20px #38bdf8',
                 duration: 0.3,
                 stagger: {
                     each: 0.05,
@@ -113,7 +113,7 @@ const SectionIntro = () => {
             <div style={{
                 width: '100px',
                 height: '3px',
-                background: 'linear-gradient(90deg, #00ff88, #00d4ff, #ff0080)',
+                background: 'linear-gradient(90deg, #38bdf8, #00d4ff, #0ea5e9)',
                 marginTop: '30px',
                 borderRadius: '10px'
             }} />

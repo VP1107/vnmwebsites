@@ -114,14 +114,41 @@ const WorkShowcase = () => {
     <section
       ref={containerRef}
       style={{
-        background: '#050505',
+        background: '#000000',
         padding: '100px 5%',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        position: 'relative'
       }}
     >
+      {/* Top Gradient Fade */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '200px',
+        background: 'linear-gradient(to bottom, #000000, transparent)',
+        zIndex: 2,
+        pointerEvents: 'none'
+      }} />
+
+      {/* Bottom Gradient Fade */}
+      <div style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        width: '100%',
+        height: '200px',
+        background: 'linear-gradient(to top, #000000, transparent)',
+        zIndex: 2,
+        pointerEvents: 'none'
+      }} />
+
       <div style={{
         textAlign: 'center',
-        marginBottom: '150px'
+        marginBottom: '150px',
+        position: 'relative',
+        zIndex: 3
       }}>
         <h2 style={{
           fontSize: 'clamp(40px, 8vw, 100px)',
@@ -131,12 +158,12 @@ const WorkShowcase = () => {
           marginBottom: '20px',
           textTransform: 'uppercase'
         }}>
-          Selected <span style={{ color: '#00ff88', WebkitTextStroke: '1px #00ff88', WebkitTextFillColor: 'transparent' }}>Work</span>
+          Selected <span style={{ color: '#38bdf8', WebkitTextStroke: '1px #38bdf8', WebkitTextFillColor: 'transparent' }}>Work</span>
         </h2>
         <div style={{
           width: '2px',
           height: '100px',
-          background: 'linear-gradient(to bottom, #00ff88, transparent)',
+          background: 'linear-gradient(to bottom, #38bdf8, transparent)',
           margin: '0 auto'
         }} />
       </div>
@@ -205,7 +232,7 @@ const WorkShowcase = () => {
               }}
             >
               <h3 style={{
-                color: '#00ff88',
+                color: '#38bdf8',
                 fontFamily: '"Inter", sans-serif',
                 fontSize: '14px',
                 letterSpacing: '3px',
@@ -264,7 +291,7 @@ const WorkShowcase = () => {
                 href={project.link}
                 style={{
                   display: 'inline-block',
-                  borderBottom: '2px solid #00ff88',
+                  borderBottom: '2px solid #38bdf8',
                   paddingBottom: '5px',
                   color: '#ffffff',
                   textDecoration: 'none',

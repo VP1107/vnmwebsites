@@ -9,6 +9,9 @@ const ServiceCard = ({ service, index }) => {
     const contentRef = useRef(null);
     const [isHovered, setIsHovered] = useState(false);
 
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
+
     useEffect(() => {
         const ctx = gsap.context(() => {
             // Pin card while scrolling through it
@@ -70,6 +73,44 @@ const ServiceCard = ({ service, index }) => {
         return () => ctx.revert();
     }, []);
 
+    // Lazy Load & Play/Pause Logic
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    // Load video when completely or partially in view (with margin)
+                    if (entry.isIntersecting) {
+                        if (!isLoaded) {
+                            video.d = 'auto'; // Set preload to auto to start loading
+                            setIsLoaded(true);
+                        }
+
+                        // Play if it's actually visible on screen
+                        video.play().catch(e => console.log('Autoplay prevented:', e));
+                        setIsPlaying(true);
+                    } else {
+                        // Pause when out of view
+                        video.pause();
+                        setIsPlaying(false);
+                    }
+                });
+            },
+            {
+                rootMargin: '200px 0px', // Start loading 200px before it enters viewport
+                threshold: 0.1
+            }
+        );
+
+        observer.observe(cardRef.current);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, [isLoaded]);
+
     // Mouse move 3D tilt effect
     const handleMouseMove = (e) => {
         if (!isHovered) return;
@@ -127,7 +168,6 @@ const ServiceCard = ({ service, index }) => {
             {/* Background Video */}
             <video
                 ref={videoRef}
-                autoPlay
                 loop
                 muted
                 playsInline
@@ -144,8 +184,10 @@ const ServiceCard = ({ service, index }) => {
                     objectFit: 'cover',
                     zIndex: 1,
                     filter: isHovered ? 'brightness(0.8) blur(5px)' : 'brightness(0.6)',
-                    transition: 'filter 0.5s ease'
+                    transition: 'filter 0.5s ease',
+                    opacity: isLoaded ? 1 : 0 // Fade in when loaded
                 }}
+                onLoadedData={() => gsap.to(videoRef.current, { opacity: 1, duration: 0.5 })}
             >
                 <source src={service.videoSrc} type="video/mp4" />
             </video>
