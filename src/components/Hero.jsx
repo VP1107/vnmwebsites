@@ -3,14 +3,11 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import AnimatedBackground from './AnimatedBackground';
 import ParticleCanvas from './ParticleCanvas';
-import MorphingLogo from './MorphingLogo';
 import HeroContent from './HeroContent';
 import ScrollPrompt from './ScrollPrompt';
 import CustomCursor from './CustomCursor';
-
 import './Hero.css';
 
-// Lazy load non-critical overlay
 const GlitchOverlay = lazy(() => import('./GlitchOverlay'));
 
 gsap.registerPlugin(ScrollTrigger);
@@ -20,12 +17,10 @@ const Hero = () => {
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
-        // ✅ FIX #4: Combined initialization and cleanup
         const timer = setTimeout(() => setIsLoaded(true), 100);
 
         return () => {
             clearTimeout(timer);
-            // Kill all ScrollTriggers created by this component
             ScrollTrigger.getAll().forEach(st => {
                 if (st.vars.trigger === heroRef.current) {
                     st.kill();
@@ -37,87 +32,88 @@ const Hero = () => {
     useEffect(() => {
         if (!heroRef.current || !isLoaded) return;
 
-        // Scroll Destruction Logic
-        const ctx = gsap.context(() => {
-            ScrollTrigger.create({
-                trigger: heroRef.current,
-                start: 'top top',
-                end: 'bottom top',
-                scrub: 1,
-                onUpdate: (self) => {
-                    const progress = self.progress;
+        // ✅ CRITICAL FIX: Wait for entrance animation to complete before enabling scroll destruction
+        const scrollDestructionTimer = setTimeout(() => {
+            const ctx = gsap.context(() => {
+                ScrollTrigger.create({
+                    trigger: heroRef.current,
+                    start: 'top top',
+                    end: 'bottom top',
+                    scrub: 1,
+                    onUpdate: (self) => {
+                        const progress = self.progress;
 
-                    // ✅ FIX #1: Use gsap.set() instead of gsap.to() for performance
-                    // gsap.set() is instant and doesn't create tweens on every scroll
+                        // 1. ✅ FIX: Target whole text spans instead of individual chars
+                        // Scope to heroRef to avoid searching entire document
+                        const vmText = heroRef.current?.querySelector('.vm-text');
+                        const websitesText = heroRef.current?.querySelector('.websites-text');
 
-                    // 1. Logo spins and shrinks rapidly
-                    const logoEl = document.querySelector('.morphing-logo');
-                    if (logoEl) {
-                        gsap.set(logoEl, {
-                            rotation: progress * 720,
-                            scale: Math.max(0, 1 - progress * 2),
-                            opacity: 1 - progress * 2
-                        });
-                    }
-
-                    // ✅ FIX #3: Added null checks for SplitType elements
-                    // 2. Text characters scatter
-                    const chars = document.querySelectorAll('.hero-title .char');
-                    if (chars.length > 0) {
-                        chars.forEach((char, i) => {
-                            const angle = (i * 137.5) * (Math.PI / 180); // Golden angle
-                            const dist = 800 * progress;
-
-                            gsap.set(char, {
-                                x: Math.cos(angle) * dist,
-                                y: Math.sin(angle) * dist,
-                                rotation: 360 * progress * (i % 2 === 0 ? 1 : -1),
-                                opacity: 1 - progress
+                        if (vmText) {
+                            gsap.set(vmText, {
+                                x: -300 * progress,
+                                y: -200 * progress,
+                                rotation: -180 * progress,
+                                opacity: 1 - progress,
+                                scale: 1 - progress * 0.3,
+                                overwrite: 'auto' // Prevent conflict
                             });
-                        });
-                    }
+                        }
 
-                    // 3. Subtitle words scatter differently
-                    const words = document.querySelectorAll('.hero-subtitle .word');
-                    if (words.length > 0) {
-                        words.forEach((word, i) => {
-                            gsap.set(word, {
-                                y: 500 * progress,
-                                x: (i % 2 === 0 ? -200 : 200) * progress,
-                                opacity: 1 - progress * 1.5
+                        if (websitesText) {
+                            gsap.set(websitesText, {
+                                x: 300 * progress,
+                                y: -200 * progress,
+                                rotation: 180 * progress,
+                                opacity: 1 - progress,
+                                scale: 1 - progress * 0.3,
+                                overwrite: 'auto'
                             });
-                        });
+                        }
+
+                        // 2. Subtitle fades and drops
+                        const subtitle = heroRef.current?.querySelector('.hero-subtitle');
+                        if (subtitle) {
+                            gsap.set(subtitle, {
+                                y: 200 * progress,
+                                opacity: 1 - progress * 1.5,
+                                overwrite: 'auto'
+                            });
+                        }
+
+                        // 3. Buttons sink and separate
+                        const primaryBtn = heroRef.current?.querySelector('.cta-primary');
+                        const secondaryBtn = heroRef.current?.querySelector('.cta-secondary');
+
+                        if (primaryBtn) {
+                            gsap.set(primaryBtn, {
+                                x: -100 * progress,
+                                y: 200 * progress,
+                                opacity: 1 - progress * 3,
+                                rotation: -45 * progress,
+                                overwrite: 'auto'
+                            });
+                        }
+
+                        if (secondaryBtn) {
+                            gsap.set(secondaryBtn, {
+                                x: 100 * progress,
+                                y: 200 * progress,
+                                opacity: 1 - progress * 3,
+                                rotation: 45 * progress,
+                                overwrite: 'auto'
+                            });
+                        }
                     }
+                });
+            }, heroRef);
 
-                    // 4. Buttons sink and separate
-                    const primaryBtn = document.querySelector('.cta-primary');
-                    const secondaryBtn = document.querySelector('.cta-secondary');
+            return () => ctx.revert();
+        }, 3500); // ✅ Wait 3.5 seconds for entrance animation to complete
 
-                    if (primaryBtn) {
-                        gsap.set(primaryBtn, {
-                            x: -100 * progress,
-                            y: 200 * progress,
-                            opacity: 1 - progress * 3,
-                            rotation: -45 * progress
-                        });
-                    }
-
-                    if (secondaryBtn) {
-                        gsap.set(secondaryBtn, {
-                            x: 100 * progress,
-                            y: 200 * progress,
-                            opacity: 1 - progress * 3,
-                            rotation: 45 * progress
-                        });
-                    }
-                }
-            });
-        }, heroRef);
-
-        return () => ctx.revert();
+        return () => clearTimeout(scrollDestructionTimer);
     }, [isLoaded]);
 
-    return ( // ✅ FIX #0: Fixed syntax error (removed orphaned return())
+    return (
         <section
             ref={heroRef}
             className="hero-section"
@@ -135,22 +131,18 @@ const Hero = () => {
             {/* Layer 2: Canvas Particle System */}
             <ParticleCanvas />
 
-            {/* Layer 3: SVG Morphing Logo */}
-            <MorphingLogo isLoaded={isLoaded} />
-
-            {/* Layer 4: Main Text Content */}
-            {/* ✅ FIX #2: Removed unused contentRef */}
+            {/* Layer 3: Main Text Content */}
             <HeroContent isLoaded={isLoaded} />
 
-            {/* Layer 5: Glitch Overlay */}
+            {/* Layer 4: Glitch Overlay */}
             <Suspense fallback={null}>
                 <GlitchOverlay />
             </Suspense>
 
-            {/* Layer 6: Custom Cursor */}
+            {/* Layer 5: Custom Cursor */}
             <CustomCursor />
 
-            {/* Scroll Prompt */}
+            {/* Layer 6: Scroll Prompt */}
             <ScrollPrompt />
         </section>
     );

@@ -1,20 +1,19 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 import { visualizer } from "rollup-plugin-visualizer";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), visualizer({ open: true })],
-  base: "/vnmwebsites/",
+  base: '/vnmwebsites/',
   build: {
     rollupOptions: {
       output: {
         manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'gsap-vendor': ['gsap', '@gsap/react', 'gsap/ScrollTrigger'],
-          'particles-vendor': ['@tsparticles/react', '@tsparticles/slim']
+          'gsap': ['gsap', 'split-type'],
+          'react-vendor': ['react', 'react-dom']
         }
       }
-    }
+    },
+    chunkSizeWarningLimit: 100 // Warn if chunk exceeds 100KB
   }
 });

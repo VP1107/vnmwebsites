@@ -15,7 +15,7 @@ const WhatWeDo = () => {
             id: 1,
             title: 'BRANDS',
             subtitle: 'Logo • Identity • Motion',
-            videoSrc: `${import.meta.env.BASE_URL}videos/intro.mp4`, // Placeholder
+            videoSrc: `${import.meta.env.BASE_URL}videos/intro.webm`, // Optimized WebM
             description: 'Visual identities that stick in minds',
             color: '#38bdf8'
         },
@@ -23,7 +23,7 @@ const WhatWeDo = () => {
             id: 2,
             title: 'BUSINESS',
             subtitle: 'E-commerce • Restaurants • Local Shops',
-            videoSrc: `${import.meta.env.BASE_URL}videos/FinalCTA.mp4`, // Placeholder
+            videoSrc: `${import.meta.env.BASE_URL}videos/FinalCTA.webm`, // Optimized WebM
             description: 'Websites that drive sales',
             color: '#00d4ff'
         },
@@ -31,7 +31,7 @@ const WhatWeDo = () => {
             id: 3,
             title: 'PORTFOLIOS',
             subtitle: 'Creative • Professional • Personal',
-            videoSrc: `${import.meta.env.BASE_URL}videos/design-process.mp4`, // Placeholder
+            videoSrc: `${import.meta.env.BASE_URL}videos/design-process.webm`, // Optimized WebM
             description: 'Showcase your work beautifully',
             color: '#0ea5e9'
         }

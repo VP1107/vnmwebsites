@@ -84,12 +84,19 @@ const ServiceCard = ({ service, index }) => {
                     // Load video when completely or partially in view (with margin)
                     if (entry.isIntersecting) {
                         if (!isLoaded) {
-                            video.d = 'auto'; // Set preload to auto to start loading
+                            video.preload = 'auto'; // ✅ FIX: Correct property is preload
                             setIsLoaded(true);
                         }
 
                         // Play if it's actually visible on screen
-                        video.play().catch(e => console.log('Autoplay prevented:', e));
+                        const playPromise = video.play();
+                        if (playPromise !== undefined) {
+                            playPromise.catch(e => {
+                                // Auto-play was prevented
+                                // Show a UI element to let the user manually start playback if needed
+                                console.log('Autoplay prevented - user interaction required');
+                            });
+                        }
                         setIsPlaying(true);
                     } else {
                         // Pause when out of view
@@ -189,7 +196,10 @@ const ServiceCard = ({ service, index }) => {
                 }}
                 onLoadedData={() => gsap.to(videoRef.current, { opacity: 1, duration: 0.5 })}
             >
-                <source src={service.videoSrc} type="video/mp4" />
+                {/* 1. WebM (Primary) */}
+                <source src={service.videoSrc} type="video/webm" />
+                {/* 2. MP4 fallback */}
+                <source src={service.videoSrc.replace('.webm', '.mp4')} type="video/mp4" />
             </video>
 
             {/* Dark Overlay */}

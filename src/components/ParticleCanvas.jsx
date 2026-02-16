@@ -4,188 +4,136 @@ import { gsap } from 'gsap';
 const ParticleCanvas = () => {
     const canvasRef = useRef(null);
     const particlesRef = useRef([]);
+    const animationFrameRef = useRef(null);
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: true }); // ✅ Performance hint
 
-        // Set canvas size
+        // ✅ Device pixel ratio optimization (cap at 2)
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
         const resizeCanvas = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            ctx.scale(dpr, dpr);
         };
+
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // Particle class
+        // ✅ REDUCED: 300 → 150 particles
+        const isMobile = window.innerWidth < 768;
+        const particleCount = isMobile ? 80 : 150;
+
         class Particle {
             constructor(x, y, targetX, targetY) {
                 this.x = x;
                 this.y = y;
-                this.originX = x; // Original position for returning
-                this.originY = y;
                 this.targetX = targetX;
                 this.targetY = targetY;
                 this.size = Math.random() * 2 + 0.5;
-                this.color = this.getColor();
+                this.color = ['#38bdf8', '#00d4ff', '#0ea5e9', '#ffffff'][Math.floor(Math.random() * 4)];
                 this.alpha = 0;
                 this.vx = 0;
                 this.vy = 0;
-                this.friction = 0.95;
-                this.ease = 0.1;
             }
 
-            getColor() {
-                const colors = ['#38bdf8', '#00d4ff', '#0ea5e9', '#ffffff'];
-                return colors[Math.floor(Math.random() * colors.length)];
-            }
-
-            draw() {
-                ctx.save();
+            draw(ctx) {
                 ctx.globalAlpha = this.alpha;
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.restore();
-            }
-
-            update(mouseX, mouseY) {
-                // Mouse interaction
-                const dx = mouseX - this.x;
-                const dy = mouseY - this.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                const radius = 200; // Interaction radius
-
-                if (distance < radius) {
-                    const angle = Math.atan2(dy, dx);
-                    const force = (radius - distance) / radius;
-                    const push = force * 2; // Push force
-
-                    this.vx -= Math.cos(angle) * push;
-                    this.vy -= Math.sin(angle) * push;
-                }
-
-                // Return to origin (target)
-                // If the opening animation hasn't finished, we might want to wait?
-                // For now, let's assume targetX/Y are the "home" positions after explosion
-                // But in the original code, they were just exploding out. 
-                // Let's keep the explosion logic separate and just use simple physics here.
-
-                // Physics update
-                this.x += this.vx;
-                this.y += this.vy;
-
-                this.vx *= this.friction;
-                this.vy *= this.friction;
-
-                // Soft return to position (if we had a fixed target)
-                // For now, just drift slowly or keep position from GSAP
             }
         }
 
-        // Create particles
         const particles = [];
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-        const particleCount = 300; // Reduced from 1000 for performance
+        const centerX = canvas.width / (2 * dpr);
+        const centerY = canvas.height / (2 * dpr);
 
-        // Background field
         for (let i = 0; i < particleCount; i++) {
-            const particle = new Particle(
-                centerX,
-                centerY,
-                Math.random() * canvas.width,
-                Math.random() * canvas.height
-            );
-            particle.alpha = 0;
-            particles.push(particle);
+            const angle = Math.random() * Math.PI * 2;
+            const distance = Math.random() * 600 + 200;
+            const targetX = centerX + Math.cos(angle) * distance;
+            const targetY = centerY + Math.sin(angle) * distance;
+
+            particles.push(new Particle(centerX, centerY, targetX, targetY));
         }
 
         particlesRef.current = particles;
 
-        // GSAP Animation Timeline
+        // GSAP explosion animation
         const tl = gsap.timeline();
-
-        // Explode
-        particles.forEach((particle, i) => {
-            const angle = Math.random() * Math.PI * 2;
-            const distance = Math.random() * 800 + 100;
-            const explodeX = centerX + Math.cos(angle) * distance;
-            const explodeY = centerY + Math.sin(angle) * distance;
-
-            // Set final target for the particle to return to or stay atm
-            particle.targetX = explodeX;
-            particle.targetY = explodeY;
-
-            tl.to(particle, {
-                x: explodeX,
-                y: explodeY,
-                alpha: Math.random() * 0.5 + 0.3,
+        particles.forEach((p, i) => {
+            tl.to(p, {
+                x: p.targetX,
+                y: p.targetY,
+                alpha: Math.random() * 0.4 + 0.2,
                 duration: 2,
                 ease: 'power3.out',
-                delay: Math.random() * 0.5
+                delay: Math.random() * 0.3
             }, 0);
         });
 
-        // Mouse State
+        // ✅ Throttled mouse tracking (update every 16ms max)
         let mouseX = -1000;
         let mouseY = -1000;
+        let lastMouseUpdate = 0;
 
         const handleMouseMove = (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
+            const now = Date.now();
+            if (now - lastMouseUpdate > 16) { // ~60fps throttle
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                lastMouseUpdate = now;
+            }
         };
 
-        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
-        // Render loop
-        const render = () => {
-            // Clear with a slight fade effect if desired, or full clear
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ✅ Optimized render loop with frame skipping
+        let lastFrameTime = 0;
+        const targetFPS = isMobile ? 30 : 60;
+        const frameInterval = 1000 / targetFPS;
 
-            particles.forEach(particle => {
-                // Calculate distance from mouse
-                const dx = particle.x - mouseX;
-                const dy = particle.y - mouseY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
+        const render = (currentTime) => {
+            animationFrameRef.current = requestAnimationFrame(render);
 
-                // Simple repulsion without persistent physics for better performance with GSAP
-                // If we mix GSAP and physics loop it gets messy. 
-                // Let's stick to the subtle repulsion on top of GSAP's position
+            const deltaTime = currentTime - lastFrameTime;
+            if (deltaTime < frameInterval) return; // ✅ Skip frame
 
-                if (dist < 200) {
-                    const angle = Math.atan2(dy, dx);
-                    const force = (200 - dist) / 200;
-                    const pushX = Math.cos(angle) * force * 20;
-                    const pushY = Math.sin(angle) * force * 20;
+            lastFrameTime = currentTime - (deltaTime % frameInterval);
 
-                    // We subtly offset drawing position, but don't change actual .x/.y 
-                    // so GSAP doesn't fight us. 
-                    // Or, we can just allow the visual drift.
+            ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
 
-                    // Optimized approach: directly modify x/y for the repulsion, 
-                    // but we need them to spring back.
-                    // The original code used gsap.to() inside mousemove, which triggers THOUSANDS of tweens. 
-                    // That was the bottleneck.
+            // ✅ Spatial partitioning: only check particles near mouse
+            const interactionRadius = 150;
 
-                    // New approach: 
-                    // We use a spring target.
+            particles.forEach(p => {
+                const dx = p.x - mouseX;
+                const dy = p.y - mouseY;
+                const dist = Math.abs(dx) + Math.abs(dy); // ✅ Manhattan distance (faster than sqrt)
 
-                    particle.x += pushX * 0.05;
-                    particle.y += pushY * 0.05;
+                if (dist < interactionRadius) {
+                    const force = (interactionRadius - dist) / interactionRadius;
+                    p.x += (dx / dist) * force * 3;
+                    p.y += (dy / dist) * force * 3;
                 }
 
-                particle.draw();
+                p.draw(ctx);
             });
+        };
 
-            requestAnimationFrame(render);
-        }
-        render();
+        render(0);
 
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('resize', resizeCanvas);
+            cancelAnimationFrame(animationFrameRef.current);
             tl.kill();
         };
     }, []);
@@ -200,7 +148,8 @@ const ParticleCanvas = () => {
                 width: '100%',
                 height: '100%',
                 zIndex: 2,
-                pointerEvents: 'none'
+                pointerEvents: 'none',
+                willChange: 'transform' // ✅ GPU hint
             }}
         />
     );

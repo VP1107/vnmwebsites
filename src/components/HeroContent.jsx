@@ -10,12 +10,10 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
     useEffect(() => {
         if (!isLoaded || !titleRef.current || !subtitleRef.current) return;
 
-        // Split text into characters and words
-        const titleSplit = new SplitType(titleRef.current, {
-            types: 'chars',
-            tagName: 'span'
-        });
+        // ✅ FIX: Don't split the title - just animate the spans directly
+        // Removed SplitType for title since we're animating whole spans
 
+        // Split subtitle into words
         const subtitleSplit = new SplitType(subtitleRef.current, {
             types: 'words',
             tagName: 'span'
@@ -34,28 +32,28 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
             });
         }
 
-        // Animate WEBSITES (Slide up + fade + spread)
+        // Animate CREATIONS - SYNCED with V&M
         const websitesText = titleRef.current.querySelector('.websites-text');
         if (websitesText) {
             tl.from(websitesText, {
-                y: 40,
+                y: 80,
                 opacity: 0,
-                letterSpacing: '0.5em',
-                duration: 1.4,
+                duration: 1.2,
                 ease: 'power3.out'
-            }, '-=0.8');
+            }, '<'); // ✅ '<' means start at same time as previous animation
         }
 
-        // Subtitle
-        tl.from(subtitleRef.current, {
+        // Subtitle words animate
+        tl.from(subtitleSplit.words, {
             opacity: 0,
             y: 20,
-            duration: 0.8,
+            duration: 0.6,
+            stagger: 0.05, // ✅ Each word animates with slight delay
             ease: 'power3.out'
         }, '-=0.6');
 
-        // Buttons
-        if (ctaRef.current && ctaRef.current.children) {
+        // Buttons bounce in
+        if (ctaRef.current && ctaRef.current.children && ctaRef.current.children.length > 0) {
             tl.from(ctaRef.current.children, {
                 scale: 0,
                 opacity: 0,
@@ -67,7 +65,6 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
 
         // Cleanup
         return () => {
-            titleSplit.revert();
             subtitleSplit.revert();
             tl.kill();
         };
@@ -111,9 +108,7 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
                         display: 'block',
                         color: '#ffffff',
                         textShadow: '0 0 30px rgba(56, 189, 248, 0.8), 0 0 10px rgba(255, 255, 255, 0.8)',
-                        background: 'none',
-                        WebkitTextFillColor: 'initial',
-                        filter: 'none'
+                        willChange: 'transform, opacity' // ✅ GPU acceleration hint
                     }}
                 >
                     V&M
@@ -126,7 +121,8 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
                         color: 'transparent',
                         WebkitTextStroke: '2px rgba(255,255,255,0.8)',
                         letterSpacing: '0.02em',
-                        marginTop: '-2%'
+                        marginTop: '0',
+                        willChange: 'transform, opacity' // ✅ GPU acceleration hint
                     }}
                 >
                     CREATIONS
@@ -159,8 +155,6 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
                     pointerEvents: 'auto'
                 }}
             >
-                <button className="cta-primary">Start Your Project</button>
-                <button className="cta-secondary">View Our Work</button>
             </div>
         </div>
     );
