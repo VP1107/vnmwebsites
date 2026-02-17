@@ -5,36 +5,32 @@ import AnimatedBackground from './AnimatedBackground';
 import ParticleCanvas from './ParticleCanvas';
 import HeroContent from './HeroContent';
 import ScrollPrompt from './ScrollPrompt';
-import CustomCursor from './CustomCursor';
 import './Hero.css';
 
+// ✅ Lazy load non-critical overlay
 const GlitchOverlay = lazy(() => import('./GlitchOverlay'));
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Hero = () => {
+const Hero = ({ startAnimation = false }) => {
     const heroRef = useRef(null);
+    const ctxRef = useRef(null); // ✅ Store ctx reference for cleanup
+    const timerRef = useRef(null); // ✅ Store timer reference for cleanup
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
-        const timer = setTimeout(() => setIsLoaded(true), 100);
-
-        return () => {
-            clearTimeout(timer);
-            ScrollTrigger.getAll().forEach(st => {
-                if (st.vars.trigger === heroRef.current) {
-                    st.kill();
-                }
-            });
-        };
-    }, []);
+        if (startAnimation) {
+            setIsLoaded(true);
+        }
+    }, [startAnimation]);
 
     useEffect(() => {
         if (!heroRef.current || !isLoaded) return;
 
-        // ✅ CRITICAL FIX: Wait for entrance animation to complete before enabling scroll destruction
-        const scrollDestructionTimer = setTimeout(() => {
-            const ctx = gsap.context(() => {
+        // ✅ FIX: Store timer ref for cleanup
+        timerRef.current = setTimeout(() => {
+            // ✅ FIX: Store ctx ref so cleanup can access it
+            ctxRef.current = gsap.context(() => {
                 ScrollTrigger.create({
                     trigger: heroRef.current,
                     start: 'top top',
@@ -42,11 +38,14 @@ const Hero = () => {
                     scrub: 1,
                     onUpdate: (self) => {
                         const progress = self.progress;
+                        const el = heroRef.current;
+                        if (!el) return;
 
-                        // 1. ✅ FIX: Target whole text spans instead of individual chars
-                        // Scope to heroRef to avoid searching entire document
-                        const vmText = heroRef.current?.querySelector('.vm-text');
-                        const websitesText = heroRef.current?.querySelector('.websites-text');
+                        const vmText = el.querySelector('.vm-text');
+                        const websitesText = el.querySelector('.websites-text');
+                        const subtitle = el.querySelector('.hero-subtitle');
+                        const primaryBtn = el.querySelector('.cta-primary');
+                        const secondaryBtn = el.querySelector('.cta-secondary');
 
                         if (vmText) {
                             gsap.set(vmText, {
@@ -54,8 +53,8 @@ const Hero = () => {
                                 y: -200 * progress,
                                 rotation: -180 * progress,
                                 opacity: 1 - progress,
-                                scale: 1 - progress * 0.3,
-                                overwrite: 'auto' // Prevent conflict
+                                scale: 1 - progress * 0.3
+                                // ✅ Removed overwrite - not valid on gsap.set()
                             });
                         }
 
@@ -65,32 +64,23 @@ const Hero = () => {
                                 y: -200 * progress,
                                 rotation: 180 * progress,
                                 opacity: 1 - progress,
-                                scale: 1 - progress * 0.3,
-                                overwrite: 'auto'
+                                scale: 1 - progress * 0.3
                             });
                         }
 
-                        // 2. Subtitle fades and drops
-                        const subtitle = heroRef.current?.querySelector('.hero-subtitle');
                         if (subtitle) {
                             gsap.set(subtitle, {
                                 y: 200 * progress,
-                                opacity: 1 - progress * 1.5,
-                                overwrite: 'auto'
+                                opacity: 1 - progress * 1.5
                             });
                         }
-
-                        // 3. Buttons sink and separate
-                        const primaryBtn = heroRef.current?.querySelector('.cta-primary');
-                        const secondaryBtn = heroRef.current?.querySelector('.cta-secondary');
 
                         if (primaryBtn) {
                             gsap.set(primaryBtn, {
                                 x: -100 * progress,
                                 y: 200 * progress,
                                 opacity: 1 - progress * 3,
-                                rotation: -45 * progress,
-                                overwrite: 'auto'
+                                rotation: -45 * progress
                             });
                         }
 
@@ -99,18 +89,24 @@ const Hero = () => {
                                 x: 100 * progress,
                                 y: 200 * progress,
                                 opacity: 1 - progress * 3,
-                                rotation: 45 * progress,
-                                overwrite: 'auto'
+                                rotation: 45 * progress
                             });
                         }
                     }
                 });
             }, heroRef);
 
-            return () => ctx.revert();
-        }, 3500); // ✅ Wait 3.5 seconds for entrance animation to complete
+        }, 3500);
 
-        return () => clearTimeout(scrollDestructionTimer);
+        // ✅ FIX: Proper cleanup - clears both timer AND ctx
+        return () => {
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+            }
+            if (ctxRef.current) {
+                ctxRef.current.revert();
+            }
+        };
     }, [isLoaded]);
 
     return (
@@ -139,10 +135,9 @@ const Hero = () => {
                 <GlitchOverlay />
             </Suspense>
 
-            {/* Layer 5: Custom Cursor */}
-            <CustomCursor />
+            {/* ✅ REMOVED: CustomCursor - it belongs in App.jsx only */}
 
-            {/* Layer 6: Scroll Prompt */}
+            {/* Layer 5: Scroll Prompt */}
             <ScrollPrompt />
         </section>
     );

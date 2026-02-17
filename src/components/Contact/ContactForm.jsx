@@ -120,7 +120,7 @@ const ContactForm = () => {
     };
 
     return (
-        <section className="contact-form-section">
+        <section id="contact-section" className="contact-form-section">
             {/* Particle background placeholder */}
             <div className="particle-bg" aria-hidden="true"></div>
 

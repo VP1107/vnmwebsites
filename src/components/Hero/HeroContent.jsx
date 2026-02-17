@@ -10,19 +10,17 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
     useEffect(() => {
         if (!isLoaded || !titleRef.current || !subtitleRef.current) return;
 
-        // ✅ FIX: Don't split the title - just animate the spans directly
-        // Removed SplitType for title since we're animating whole spans
-
-        // Split subtitle into words
         const subtitleSplit = new SplitType(subtitleRef.current, {
             types: 'words',
             tagName: 'span'
         });
 
-        const tl = gsap.timeline({ delay: 1.5 });
+        // ✅ FIX: Increased delay to ensure fonts are loaded
+        const tl = gsap.timeline({ delay: 0.5 });
 
-        // Animate V&M (Slide up + fade)
         const vmText = titleRef.current.querySelector('.vm-text');
+        const websitesText = titleRef.current.querySelector('.websites-text');
+
         if (vmText) {
             tl.from(vmText, {
                 y: 80,
@@ -32,28 +30,26 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
             });
         }
 
-        // Animate CREATIONS - SYNCED with V&M
-        const websitesText = titleRef.current.querySelector('.websites-text');
         if (websitesText) {
             tl.from(websitesText, {
                 y: 80,
                 opacity: 0,
                 duration: 1.2,
                 ease: 'power3.out'
-            }, '<'); // ✅ '<' means start at same time as previous animation
+            }, '<');
         }
 
-        // Subtitle words animate
-        tl.from(subtitleSplit.words, {
-            opacity: 0,
-            y: 20,
-            duration: 0.6,
-            stagger: 0.05, // ✅ Each word animates with slight delay
-            ease: 'power3.out'
-        }, '-=0.6');
+        if (subtitleSplit.words) {
+            tl.from(subtitleSplit.words, {
+                opacity: 0,
+                y: 20,
+                duration: 0.6,
+                stagger: 0.05,
+                ease: 'power3.out'
+            }, '-=0.6');
+        }
 
-        // Buttons bounce in
-        if (ctaRef.current && ctaRef.current.children && ctaRef.current.children.length > 0) {
+        if (ctaRef.current?.children?.length > 0) {
             tl.from(ctaRef.current.children, {
                 scale: 0,
                 opacity: 0,
@@ -63,12 +59,19 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
             }, '-=0.4');
         }
 
-        // Cleanup
         return () => {
             subtitleSplit.revert();
             tl.kill();
         };
     }, [isLoaded]);
+
+    // ✅ FIX: Lenis-compatible scroll handler
+    const scrollToSection = (id) => {
+        const section = document.getElementById(id);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
 
     return (
         <div
@@ -95,7 +98,7 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginBottom: '30px',
-                    fontFamily: '"Syne", sans-serif',
+                    fontFamily: 'var(--font-display)',
                     fontWeight: 900,
                     color: '#ffffff',
                     lineHeight: '0.9'
@@ -108,7 +111,7 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
                         display: 'block',
                         color: '#ffffff',
                         textShadow: '0 0 30px rgba(56, 189, 248, 0.8), 0 0 10px rgba(255, 255, 255, 0.8)',
-                        willChange: 'transform, opacity' // ✅ GPU acceleration hint
+                        willChange: 'transform, opacity'
                     }}
                 >
                     V&M
@@ -122,7 +125,7 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
                         WebkitTextStroke: '2px rgba(255,255,255,0.8)',
                         letterSpacing: '0.02em',
                         marginTop: '0',
-                        willChange: 'transform, opacity' // ✅ GPU acceleration hint
+                        willChange: 'transform, opacity'
                     }}
                 >
                     CREATIONS
@@ -136,7 +139,7 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
                     fontSize: 'clamp(14px, 2vw, 22px)',
                     color: '#a0a0a0',
                     marginBottom: '50px',
-                    fontFamily: '"Inter", sans-serif',
+                    fontFamily: 'var(--font-body)',
                     fontWeight: 400,
                     letterSpacing: '0.1em',
                     textTransform: 'uppercase'
@@ -155,6 +158,18 @@ const HeroContent = memo(forwardRef(({ isLoaded }, ref) => {
                     pointerEvents: 'auto'
                 }}
             >
+                <button
+                    className="cta-primary"
+                    onClick={() => scrollToSection('work-section')}
+                >
+                    See Our Work
+                </button>
+                <button
+                    className="cta-secondary"
+                    onClick={() => scrollToSection('contact-section')}
+                >
+                    Get in Touch
+                </button>
             </div>
         </div>
     );

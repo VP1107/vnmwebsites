@@ -1,0 +1,177 @@
+.work-showcase {
+  background: #111;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.work-showcase h2 {
+  font-size: clamp(36px, 6vw, 72px);
+  font-family: var(--font-accent);
+  text-transform: uppercase;
+}
+
+.work-showcase p {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 600px;
+  text-align: center;
+  padding: 0 2rem;
+}
+
+/* Project Card Layout */
+.project-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5%;
+  width: 100%;
+  margin-bottom: 20vh;
+  /* Replaces inline gap */
+}
+
+/* Alternating Layouts */
+.project-card.even {
+  flex-direction: row;
+}
+
+.project-card.odd {
+  flex-direction: row-reverse;
+}
+
+/* Image Container */
+.project-image-container {
+  flex: 1 1 500px;
+  height: 600px;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.project-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(20%) contrast(1.1);
+  will-change: filter;
+  transition: transform 0.5s ease;
+}
+
+/* Content Container */
+.project-content-container {
+  flex: 1 1 400px;
+}
+
+.project-card.even .project-content-container {
+  text-align: left;
+}
+
+.project-card.odd .project-content-container {
+  text-align: right;
+  /* Ensure tags and button align right on odd items */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Responsive Handling */
+@media (max-width: 1024px) {
+
+  .project-card,
+  .project-card.even,
+  .project-card.odd {
+    flex-direction: column !important;
+    gap: 50px;
+  }
+
+  .project-image-container {
+    width: 100%;
+    height: 400px;
+    flex: none;
+  }
+
+  .project-content-container {
+    width: 100%;
+    flex: none;
+    text-align: left !important;
+    align-items: flex-start !important;
+  }
+}
+
+/* Typography & Elements */
+.project-content h3 {
+  color: #38bdf8;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.project-content h2 {
+  color: #ffffff;
+  font-family: "Syne", sans-serif;
+  font-size: clamp(40px, 5vw, 80px);
+  font-weight: 800;
+  margin-bottom: 30px;
+  line-height: 0.9;
+}
+
+.project-content p {
+  color: #a0a0a0;
+  font-family: "Inter", sans-serif;
+  font-size: 18px;
+  line-height: 1.6;
+  margin-bottom: 40px;
+  max-width: 500px;
+}
+
+.project-card.odd .project-content p {
+  margin-left: auto;
+  text-align: right;
+}
+
+.tech-stack {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.project-card.odd .tech-stack {
+  justify-content: flex-end;
+}
+
+.tech-stack span {
+  border: 1px solid #333;
+  padding: 8px 15px;
+  border-radius: 50px;
+  color: #fff;
+  font-size: 12px;
+  font-family: "Inter", sans-serif;
+}
+
+.project-content a {
+  display: inline-block;
+  border-bottom: 2px solid #38bdf8;
+  padding-bottom: 5px;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 16px;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}

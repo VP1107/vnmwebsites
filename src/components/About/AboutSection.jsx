@@ -25,6 +25,7 @@ const AboutSection = () => {
         <section
             ref={sectionRef}
             className="about-section"
+            id="about-section"
             style={{
                 position: 'relative',
                 background: '#000000',

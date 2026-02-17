@@ -13,34 +13,50 @@ canvas {
 
 /* Button Styles - moved here for global access if needed, 
    though they are also styled inline in HeroContent */
+/* Button Styles */
 .cta-primary,
 .cta-secondary {
-    padding: 18px 40px;
-    font-size: 18px;
-    font-weight: 600;
+    padding: 16px 40px;
+    font-size: 16px;
+    font-weight: 700;
     border: none;
     border-radius: 50px;
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    transition: transform 0.3s ease;
-    font-family: 'Inter', sans-serif;
+    transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    font-family: var(--font-accent);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-width: 180px;
+    /* Ensure minimum width */
+    margin: 10px;
 }
 
 .cta-primary {
-    background: linear-gradient(135deg, #38bdf8, #00d4ff);
-    color: #000;
+    background: #ffffff;
+    color: #000000;
     box-shadow: 0 10px 30px rgba(56, 189, 248, 0.2);
 }
 
-.cta-secondary {
-    background: transparent;
-    color: #fff;
-    border: 2px solid #38bdf8;
+.cta-primary:hover {
+    transform: scale(1.05);
+    background: #e6e6e6;
 }
 
-.cta-primary:hover,
+.cta-secondary {
+    background: rgba(0, 0, 0, 0.3);
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+}
+
 .cta-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
     transform: scale(1.05);
 }
 

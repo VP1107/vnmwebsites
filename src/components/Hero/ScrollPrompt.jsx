@@ -8,8 +8,10 @@ const ScrollPrompt = () => {
     const promptRef = useRef(null);
 
     useEffect(() => {
+        if (!promptRef.current) return;
+
         // Bounce animation
-        gsap.to(promptRef.current, {
+        const bounceTween = gsap.to(promptRef.current, {
             y: 15,
             duration: 0.8,
             repeat: -1,
@@ -18,7 +20,7 @@ const ScrollPrompt = () => {
         });
 
         // Fade out on scroll
-        gsap.to(promptRef.current, {
+        const fadeTrigger = gsap.to(promptRef.current, {
             scrollTrigger: {
                 trigger: 'body',
                 start: 'top top',
@@ -28,7 +30,30 @@ const ScrollPrompt = () => {
             opacity: 0,
             y: 50
         });
+
+        return () => {
+            // ✅ Proper cleanup
+            bounceTween.kill();
+            fadeTrigger.kill();
+            ScrollTrigger.getAll()
+                .filter(st => st.vars.trigger === 'body')
+                .forEach(st => st.kill());
+        };
     }, []);
+
+    // ✅ FIX: Use Lenis scroll instead of native window.scrollTo
+    const handleClick = () => {
+        // Dispatch custom event that ScrollWrapper/Lenis can listen to
+        // OR use lenis directly via ref if exposed
+        // Simplest fix: use scrollIntoView on next section
+        const nextSection = document.querySelector('section:nth-of-type(2)');
+        if (nextSection) {
+            nextSection.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            // Fallback
+            window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
+        }
+    };
 
     return (
         <div
@@ -42,12 +67,7 @@ const ScrollPrompt = () => {
                 textAlign: 'center',
                 cursor: 'pointer'
             }}
-            onClick={() => {
-                window.scrollTo({
-                    top: window.innerHeight,
-                    behavior: 'smooth'
-                });
-            }}
+            onClick={handleClick}
         >
             <svg width="30" height="50" viewBox="0 0 30 50">
                 <rect
@@ -60,12 +80,7 @@ const ScrollPrompt = () => {
                     stroke="#38bdf8"
                     strokeWidth="2"
                 />
-                <circle
-                    cx="15"
-                    cy="15"
-                    r="3"
-                    fill="#38bdf8"
-                >
+                <circle cx="15" cy="15" r="3" fill="#38bdf8">
                     <animate
                         attributeName="cy"
                         from="15"

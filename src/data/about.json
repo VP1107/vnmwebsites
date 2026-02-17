@@ -1,0 +1,24 @@
+{
+    "brand": {
+        "title": "V&M",
+        "subtitle": "Est. 2025"
+    },
+    "team": [
+        {
+            "id": "vatsal",
+            "name": "VATSAL",
+            "role": "Frontend Dev",
+            "image": "images/responsive_mockup.webp",
+            "color": "#38bdf8",
+            "align": "left"
+        },
+        {
+            "id": "mann",
+            "name": "MANN",
+            "role": "UI Designer",
+            "image": "images/responsive_mockup.webp",
+            "color": "#00d4ff",
+            "align": "right"
+        }
+    ]
+}

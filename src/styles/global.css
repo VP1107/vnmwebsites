@@ -21,9 +21,9 @@
     --text-primary: #ffffff;
 
     /* ===== Typography ===== */
-    --font-display: 'Syne', system-ui, sans-serif;
-    --font-accent: 'Monument Extended', -apple-system, sans-serif;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-display: 'Outfit', system-ui, sans-serif;
+    --font-accent: 'Outfit', -apple-system, sans-serif;
+    --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 
     /* ===== Sizing Scale ===== */
     --spacing-unit: 8px;

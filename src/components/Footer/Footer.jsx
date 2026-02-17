@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import Logo from './Logo';
+import Logo from '../UI/Logo';
 import './Footer.css';
 
 const Footer = () => {
