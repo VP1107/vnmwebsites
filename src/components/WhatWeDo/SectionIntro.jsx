@@ -113,16 +113,14 @@ const SectionIntro = () => {
             <h2
                 ref={titleRef}
                 style={{
-                    fontSize: 'clamp(50px, 10vw, 150px)',
+                    fontSize: 'clamp(40px, 7vw, 100px)',
                     fontWeight: 900,
                     color: '#ffffff',
                     marginBottom: '30px',
                     fontFamily: '"Syne", sans-serif',
                     letterSpacing: '0.02em',
-                    // BUG FIX #8: perspective must be on a PARENT element, not the
-                    // element being transformed. Setting it on titleRef itself has no
-                    // effect on the rotateX of its children (the split chars).
-                    // Move perspective to a wrapper div below.
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word'
                 }}
             >
                 WHAT WE BUILD

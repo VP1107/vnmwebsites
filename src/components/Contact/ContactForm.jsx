@@ -1,205 +1,304 @@
-import { useEffect, useRef } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './ContactForm.css';
 
-const ContactForm = () => {
-    const formRef = useRef(null);
-    const submitBtnRef = useRef(null);
-    const successMsgRef = useRef(null);
+// ── Field component — CSS handles label float, no GSAP on labels ──────────────
+const Field = ({ id, label, type = 'text', rows, required, value, onChange }) => {
+    const [focused, setFocused] = useState(false);
+    const isTextarea = type === 'textarea';
 
-    useEffect(() => {
-        // tsParticles will be integrated here
-        // For now, using CSS particles
+    return (
+        <div className={`field-wrap${focused ? ' is-focused' : ''}${value ? ' has-value' : ''}`}>
+            <label htmlFor={id} className="field-label">{label}</label>
+
+            {isTextarea ? (
+                <textarea
+                    id={id}
+                    className="field-input field-textarea"
+                    rows={rows || 4}
+                    required={required}
+                    value={value}
+                    onChange={onChange}
+                    onFocus={() => setFocused(true)}
+                    onBlur={() => setFocused(false)}
+                    aria-label={label}
+                />
+            ) : (
+                <input
+                    id={id}
+                    type={type}
+                    className="field-input"
+                    required={required}
+                    value={value}
+                    onChange={onChange}
+                    onFocus={() => setFocused(true)}
+                    onBlur={() => setFocused(false)}
+                    aria-label={label}
+                />
+            )}
+
+            {/* Cyan scan line grows on focus via CSS */}
+            <span className="field-scan" aria-hidden="true" />
+        </div>
+    );
+};
+
+// ── Main component ────────────────────────────────────────────────────────────
+const ContactForm = () => {
+    const sectionRef   = useRef(null);
+    const leftRef      = useRef(null);
+    const formRef      = useRef(null);
+    const submitBtnRef = useRef(null);
+    const successRef   = useRef(null);
+
+    const [fields, setFields] = useState({ name: '', email: '', message: '' });
+    const [sending, setSending] = useState(false);
+    const [sent, setSent] = useState(false);
+    const [charCount, setCharCount] = useState(0);
+
+    // ── Scroll-triggered entrance ────────────────────────────────────────────
+    // Using useCallback + ref callback so it only runs once when section mounts
+    const sectionCallback = useCallback((node) => {
+        if (!node) return;
+        sectionRef.current = node;
+
+        const leftChildren  = node.querySelectorAll('.contact-eyebrow, .contact-headline, .contact-descriptor, .contact-direct');
+        const rightChildren = node.querySelectorAll('.field-wrap, .submit-row');
+
+        gsap.set(leftChildren,  { opacity: 0, y: 40 });
+        gsap.set(rightChildren, { opacity: 0, y: 30 });
+
+        ScrollTrigger.create({
+            trigger: node,
+            start: 'top 75%',
+            once: true,
+            onEnter: () => {
+                gsap.to(leftChildren, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.9,
+                    stagger: 0.12,
+                    ease: 'power3.out',
+                });
+                gsap.to(rightChildren, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.8,
+                    stagger: 0.08,
+                    ease: 'power3.out',
+                    delay: 0.2,
+                });
+            }
+        });
     }, []);
 
-    const handleFocus = (e) => {
-        const field = e.target;
-        const label = field.previousElementSibling;
-
-        gsap.to(field, {
-            boxShadow: '0 0 30px 10px rgba(56, 189, 248, 0.6)',
-            borderColor: '#38bdf8',
-            scale: 1.02,
-            duration: 0.6,
-            ease: 'elastic.out(1, 0.6)',
-        });
-
-        if (label) {
-            gsap.to(label, {
-                y: -30,
-                scale: 0.85,
-                color: '#38bdf8',
-                duration: 0.4,
-                ease: 'back.out(1.7)',
-            });
-        }
+    // ── Field change handlers ─────────────────────────────────────────────────
+    const handleChange = (key) => (e) => {
+        setFields(f => ({ ...f, [key]: e.target.value }));
+        if (key === 'message') setCharCount(e.target.value.length);
     };
 
-    const handleBlur = (e) => {
-        const field = e.target;
-        const label = field.previousElementSibling;
+    // ── Submit ────────────────────────────────────────────────────────────────
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (sending || sent) return;
+        setSending(true);
 
-        if (!field.value && label) {
-            gsap.to(label, {
-                y: 0,
-                scale: 1,
-                color: '#ffffff',
-                duration: 0.4,
-                ease: 'power2.out',
-            });
-        }
+        const btn    = submitBtnRef.current;
+        const form   = formRef.current;
+        const success = successRef.current;
 
-        gsap.to(field, {
-            boxShadow: '0 0 0 0 rgba(56, 189, 248, 0)',
-            borderColor: 'rgba(255, 255, 255, 0.2)',
-            scale: 1,
+        // 1. Button pulse
+        gsap.to(btn, {
+            scale: 0.97,
+            duration: 0.15,
+            yoyo: true,
+            repeat: 1,
+            ease: 'power1.inOut',
+        });
+
+        // 2. Stagger fields out
+        const fieldWraps = form.querySelectorAll('.field-wrap');
+        gsap.to(fieldWraps, {
+            opacity: 0,
+            y: -24,
+            stagger: 0.06,
+            duration: 0.5,
+            ease: 'power2.in',
+            delay: 0.2,
+        });
+
+        // 3. Fade submit row
+        gsap.to('.submit-row', {
+            opacity: 0,
+            duration: 0.4,
+            delay: 0.4,
+        });
+
+        // 4. Reveal success
+        setTimeout(() => {
+            setSent(true);
+            setSending(false);
+
+            if (success) {
+                success.style.display = 'flex';
+                gsap.fromTo(
+                    success.children,
+                    { opacity: 0, y: 20 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        stagger: 0.1,
+                        duration: 0.7,
+                        ease: 'power3.out',
+                    }
+                );
+            }
+        }, 900);
+    };
+
+    // ── Button hover — GSAP only on the border glow, not transform ───────────
+    const onBtnEnter = () => {
+        gsap.to(submitBtnRef.current, {
+            boxShadow: '0 0 30px rgba(56,189,248,0.25)',
+            duration: 0.3,
+            ease: 'power2.out',
+        });
+    };
+    const onBtnLeave = () => {
+        gsap.to(submitBtnRef.current, {
+            boxShadow: '0 0 0px rgba(56,189,248,0)',
             duration: 0.3,
             ease: 'power2.out',
         });
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        const btn = submitBtnRef.current;
-        const form = formRef.current;
-
-        // Button morph to circle
-        const tl = gsap.timeline();
-        tl.to(btn, {
-            width: 60,
-            borderRadius: '50%',
-            duration: 0.4,
-        })
-            .to(
-                btn.querySelector('.btn-text'),
-                {
-                    opacity: 0,
-                    duration: 0.2,
-                },
-                '-=0.4'
-            )
-            .fromTo(
-                btn.querySelector('.checkmark'),
-                { scale: 0, opacity: 0, rotation: 90 },
-                {
-                    scale: 1,
-                    opacity: 1,
-                    rotation: 0,
-                    duration: 0.6,
-                    display: 'block',
-                    ease: 'elastic.out(1, 0.6)',
-                }
-            );
-
-        // Form fields dissolve
-        const fields = form.querySelectorAll('.form-field');
-        gsap.to(fields, {
-            scale: 0,
-            opacity: 0,
-            y: -100,
-            rotation: () => gsap.utils.random(-45, 45),
-            stagger: 0.1,
-            duration: 0.8,
-            ease: 'back.in(1.7)',
-        });
-
-        // Success message typewriter
-        setTimeout(() => {
-            if (successMsgRef.current) {
-                successMsgRef.current.style.display = 'block';
-                const text = "Thanks! We'll reach out within 24 hours.";
-                // Simple text insertion for now, can be complex typewriter if needed
-                successMsgRef.current.textContent = text;
-                gsap.fromTo(successMsgRef.current,
-                    { opacity: 0, y: 20 },
-                    { opacity: 1, y: 0, duration: 0.5 }
-                );
-            }
-        }, 1000);
-    };
-
     return (
-        <section id="contact-section" className="contact-form-section">
-            {/* Particle background placeholder */}
-            <div className="particle-bg" aria-hidden="true"></div>
+        <section
+            id="contact-section"
+            className="contact-section"
+            ref={sectionCallback}
+            aria-labelledby="contact-heading"
+        >
+            {/* Ambient background */}
+            <div className="contact-section__bg" aria-hidden="true">
+                <div className="contact-section__blob contact-section__blob--1" />
+                <div className="contact-section__blob contact-section__blob--2" />
+            </div>
+            <div className="contact-section__rule" aria-hidden="true" />
 
-            <div className="contact-container">
-                <h2 className="contact-title gradient-text">LET'S BUILD SOMETHING AMAZING</h2>
+            <div className="contact-inner">
 
-                <form ref={formRef} onSubmit={handleSubmit} className="contact-form">
-                    <div className="form-group">
-                        <label htmlFor="name" className="form-label">Name</label>
-                        <input
-                            type="text"
-                            id="name"
-                            className="form-field"
-                            required
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                        />
+                {/* ── LEFT ── */}
+                <div className="contact-left" ref={leftRef}>
+                    <span className="contact-eyebrow">Start a project</span>
+
+                    <h2 className="contact-headline" id="contact-heading">
+                        LET'S<br />
+                        BUILD<br />
+                        <em>TOGETHER</em>
+                    </h2>
+
+                    <p className="contact-descriptor">
+                        Have an idea? We turn concepts into polished digital
+                        experiences — from first sketch to final launch.
+                    </p>
+
+                    <div className="contact-direct">
+                        <span className="contact-direct__label">Or reach us directly</span>
+                        <a
+                            href="mailto:hello@vmcreations.com"
+                            className="contact-direct__link interactive"
+                        >
+                            hello@vmcreations.com
+                        </a>
                     </div>
-
-                    <div className="form-group">
-                        <label htmlFor="email" className="form-label">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            className="form-field"
-                            required
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="message" className="form-label">Message</label>
-                        <textarea
-                            id="message"
-                            className="form-field form-textarea"
-                            rows="5"
-                            required
-                            onFocus={handleFocus}
-                            onBlur={handleBlur}
-                        ></textarea>
-                    </div>
-
-                    <button
-                        ref={submitBtnRef}
-                        type="submit"
-                        className="submit-btn interactive"
-                        onMouseEnter={(e) => {
-                            gsap.to(e.currentTarget, {
-                                scale: 1.1,
-                                boxShadow: '0 20px 60px rgba(56, 189, 248, 0.5)',
-                                duration: 0.3,
-                                ease: 'power2.out',
-                            });
-                        }}
-                        onMouseLeave={(e) => {
-                            gsap.to(e.currentTarget, {
-                                scale: 1,
-                                boxShadow: '0 10px 30px rgba(56, 189, 248, 0.3)',
-                                duration: 0.3,
-                                ease: 'power2.out',
-                            });
-                        }}
-                    >
-                        <span className="btn-text">SEND</span>
-                        <span className="checkmark" style={{ display: 'none' }}>✓</span>
-                    </button>
-                </form>
-
-                <div ref={successMsgRef} className="success-message" style={{ display: 'none' }} aria-live="polite"></div>
-
-                <div className="contact-info">
-                    <a href="mailto:hello@vmwebsites.com" className="contact-link interactive">
-                        hello@vmwebsites.com
-                    </a>
                 </div>
+
+                {/* ── RIGHT ── */}
+                <div className="contact-right">
+                    <form
+                        ref={formRef}
+                        className="contact-form"
+                        onSubmit={handleSubmit}
+                        noValidate
+                    >
+                        <Field
+                            id="cf-name"
+                            label="Your name"
+                            value={fields.name}
+                            onChange={handleChange('name')}
+                            required
+                        />
+                        <Field
+                            id="cf-email"
+                            label="Email address"
+                            type="email"
+                            value={fields.email}
+                            onChange={handleChange('email')}
+                            required
+                        />
+                        <Field
+                            id="cf-message"
+                            label="Tell us about the project"
+                            type="textarea"
+                            rows={4}
+                            value={fields.message}
+                            onChange={handleChange('message')}
+                            required
+                        />
+
+                        <div className="submit-row">
+                            <button
+                                ref={submitBtnRef}
+                                type="submit"
+                                className={`submit-btn interactive${sending ? ' is-sending' : ''}`}
+                                onMouseEnter={onBtnEnter}
+                                onMouseLeave={onBtnLeave}
+                                disabled={sending}
+                                aria-label="Send message"
+                            >
+                                <span className="btn-text">
+                                    {sending ? 'Sending…' : 'Send Message'}
+                                </span>
+                                {/* Arrow icon */}
+                                {!sending && (
+                                    <span className="submit-arrow" aria-hidden="true">
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                            <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </span>
+                                )}
+                            </button>
+
+                            {fields.message.length > 0 && (
+                                <span className="char-count" aria-live="polite">
+                                    {charCount} chars
+                                </span>
+                            )}
+                        </div>
+                    </form>
+
+                    {/* Success state */}
+                    <div
+                        ref={successRef}
+                        className="contact-success"
+                        aria-live="polite"
+                        role="status"
+                    >
+                        <span className="contact-success__icon">✦</span>
+                        <p className="contact-success__title">Message sent.</p>
+                        <p className="contact-success__body">
+                            We'll get back to you within 24 hours.<br />
+                            Talk soon.
+                        </p>
+                    </div>
+                </div>
+
             </div>
         </section>
     );
-}
+};
 
 export default ContactForm;

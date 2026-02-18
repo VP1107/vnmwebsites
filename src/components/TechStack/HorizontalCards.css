@@ -1,0 +1,141 @@
+/* ── Horizontal Cards ─────────────────────────────────────────── */
+.hscroll-outer {
+    position: relative;
+    width: 100%;
+}
+
+.hscroll-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.hscroll-header {
+    position: absolute;
+    top: 2.5rem;
+    left: 4vw;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.3);
+    opacity: 0;
+    z-index: 2;
+}
+
+.hscroll-track {
+    display: flex;
+    gap: 2rem;
+    padding: 0 4vw;
+    will-change: transform;
+}
+
+/* ── Card ─────────────────────────────────────────────────────── */
+.hscroll-card {
+    flex-shrink: 0;
+    width: clamp(280px, 32vw, 420px);
+    min-height: 420px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 20px;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateX(60px);
+    cursor: default;
+    transition: border-color 0.3s ease;
+    transform-style: preserve-3d;
+}
+
+.hscroll-card:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Glow blob */
+.hscroll-card__glow {
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    opacity: 0.07;
+    filter: blur(50px);
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.hscroll-card:hover .hscroll-card__glow {
+    opacity: 0.14;
+}
+
+/* Top line accent */
+.hscroll-card__line {
+    width: 32px;
+    height: 2px;
+    border-radius: 2px;
+    margin-bottom: 0.75rem;
+}
+
+.hscroll-card__index {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.hscroll-card__title {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.hscroll-card__desc {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 0;
+    flex: 1;
+}
+
+.hscroll-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+}
+
+.hscroll-card__tag {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.85rem;
+    border-radius: 100px;
+}
+
+.hscroll-card__arrow {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.25);
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.hscroll-card:hover .hscroll-card__arrow {
+    color: rgba(255, 255, 255, 0.7);
+    transform: translateX(4px);
+}

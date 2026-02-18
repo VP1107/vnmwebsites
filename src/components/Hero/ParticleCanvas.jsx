@@ -1,9 +1,10 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { gsap } from 'gsap';
 
 const ParticleCanvas = () => {
     const canvasRef = useRef(null);
     const animationFrameRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(true); // ✅ Track visibility
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -18,7 +19,6 @@ const ParticleCanvas = () => {
             canvas.height = h * dpr;
             canvas.style.width = w + 'px';
             canvas.style.height = h + 'px';
-            // ✅ FIX: Reset transform before scaling to prevent accumulation
             ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.scale(dpr, dpr);
         };
@@ -30,7 +30,6 @@ const ParticleCanvas = () => {
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
 
-        // ✅ FIX: Plain objects instead of class instances (faster for GSAP)
         const particles = Array.from({ length: particleCount }, () => {
             const angle = Math.random() * Math.PI * 2;
             const distance = Math.random() * 600 + 200;
@@ -45,7 +44,6 @@ const ParticleCanvas = () => {
             };
         });
 
-        // ✅ FIX: Single GSAP tween using targets array instead of 150 individual tweens
         const tl = gsap.timeline();
         tl.to(particles, {
             x: (i) => particles[i].targetX,
@@ -54,12 +52,11 @@ const ParticleCanvas = () => {
             duration: 2,
             ease: 'power3.out',
             stagger: {
-                amount: 0.3, // Total stagger time spread
+                amount: 0.3,
                 from: 'random'
             }
         });
 
-        // ✅ Throttled mouse
         let mouseX = -1000;
         let mouseY = -1000;
         let lastMouseUpdate = 0;
@@ -74,11 +71,14 @@ const ParticleCanvas = () => {
         };
         window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
-        // ✅ Frame-skipping render loop
+        // ✅ FIX: Pause/resume based on visibility
         let lastFrameTime = 0;
         const frameInterval = 1000 / (isMobile ? 30 : 60);
+        let isRunning = true;
 
         const render = (currentTime) => {
+            if (!isRunning) return; // ✅ Exit if paused
+
             animationFrameRef.current = requestAnimationFrame(render);
             const delta = currentTime - lastFrameTime;
             if (delta < frameInterval) return;
@@ -89,7 +89,6 @@ const ParticleCanvas = () => {
             const interactionRadius = 150;
 
             particles.forEach(p => {
-                // ✅ Mouse repulsion
                 const dx = p.x - mouseX;
                 const dy = p.y - mouseY;
                 const dist = Math.abs(dx) + Math.abs(dy);
@@ -100,7 +99,6 @@ const ParticleCanvas = () => {
                     p.y += (dy / dist) * force * 3;
                 }
 
-                // ✅ Draw directly without class method overhead
                 ctx.globalAlpha = p.alpha;
                 ctx.fillStyle = p.color;
                 ctx.beginPath();
@@ -108,16 +106,33 @@ const ParticleCanvas = () => {
                 ctx.fill();
             });
 
-            // ✅ Reset alpha after drawing all particles
             ctx.globalAlpha = 1;
         };
+
+        // ✅ Intersection Observer to pause when off-screen
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                isRunning = entry.isIntersecting;
+                setIsVisible(entry.isIntersecting);
+                
+                if (isRunning && !animationFrameRef.current) {
+                    render(performance.now()); // Resume
+                }
+            },
+            { threshold: 0.1 } // Pause when <10% visible
+        );
+
+        observer.observe(canvas);
 
         render(0);
 
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('resize', setupCanvas);
-            cancelAnimationFrame(animationFrameRef.current);
+            observer.disconnect();
+            if (animationFrameRef.current) {
+                cancelAnimationFrame(animationFrameRef.current);
+            }
             tl.kill();
         };
     }, []);

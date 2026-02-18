@@ -16,11 +16,23 @@
         "color": "#61dafb"
     },
     {
-        "label": "Three.js",
-        "color": "#ffffff"
+        "label": "GSAP",
+        "color": "#88ce02"
     },
     {
-        "label": "anime.js",
+        "label": "Locomotive Scroll",
         "color": "#ff6b6b"
+    },
+    {
+        "label": "Lenis",
+        "color": "#a78bfa"
+    },
+    {
+        "label": "Figma",
+        "color": "#f24e1e"
+    },
+    {
+        "label": "Three.js",
+        "color": "#ffffff"
     }
 ]

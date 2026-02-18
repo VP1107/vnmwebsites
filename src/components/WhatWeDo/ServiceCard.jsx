@@ -117,7 +117,7 @@ const ServiceCard = ({ service, index }) => {
                             loaded = true;
                             setIsLoaded(true);
                         }
-                        video.play().catch(() => {});
+                        video.play().catch(() => { });
                     } else {
                         video.pause();
                     }
@@ -243,7 +243,8 @@ const ServiceCard = ({ service, index }) => {
                         zIndex: 3,
                         textAlign: 'center',
                         width: '90%',
-                        maxWidth: '800px'
+                        maxWidth: '800px',
+                        overflow: 'hidden'
                     }}
                 >
                     <div style={{
@@ -257,13 +258,15 @@ const ServiceCard = ({ service, index }) => {
                     </div>
 
                     <h3 style={{
-                        fontSize: 'clamp(50px, 8vw, 100px)',
+                        fontSize: 'clamp(36px, 7vw, 90px)',
                         fontWeight: 900,
                         color: service.color,
                         marginBottom: '10px',
                         fontFamily: '"Syne", sans-serif',
                         textShadow: `0 0 40px ${service.color}`,
-                        letterSpacing: '0.05em'
+                        letterSpacing: '0.02em',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word'
                     }}>
                         {service.title}
                     </h3>

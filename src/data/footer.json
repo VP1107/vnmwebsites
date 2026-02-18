@@ -1,0 +1,18 @@
+{
+    "tagline": "Built with passion. Powered by coffee.",
+    "copyright": "© 2026 — Made in India 🇮🇳",
+    "socials": [
+        {
+            "platform": "Instagram",
+            "url": "https://instagram.com"
+        },
+        {
+            "platform": "LinkedIn",
+            "url": "https://linkedin.com"
+        },
+        {
+            "platform": "GitHub",
+            "url": "https://github.com"
+        }
+    ]
+}

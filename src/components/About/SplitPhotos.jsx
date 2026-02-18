@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import aboutData from '../../data/about.json';
 
 const SplitPhotos = () => {
     const containerRef = useRef(null);
@@ -59,7 +60,11 @@ const SplitPhotos = () => {
                 justifyContent: 'center',
                 overflow: 'hidden',
                 padding: '0 5%',
-                background: '#000000'
+                background: [
+                    'radial-gradient(ellipse 60vw 60vw at 90% 10%, rgba(56,189,248,0.22) 0%, transparent 70%)',
+                    'radial-gradient(ellipse 45vw 45vw at 10% 90%, rgba(14,165,233,0.18) 0%, transparent 65%)',
+                    '#000'
+                ].join(', ')
             }}
         >
             {/* Left Photo - Vatsal */}
@@ -72,7 +77,7 @@ const SplitPhotos = () => {
                     height: '60vh',
                     borderRadius: '20px',
                     overflow: 'hidden',
-                    boxShadow: '0 30px 100px rgba(56, 189, 248, 0.2)',
+                    boxShadow: '0 15px 50px rgba(56, 189, 248, 0.1)',
                     border: '1px solid rgba(56, 189, 248, 0.3)',
                     background: '#111'
                 }}
@@ -93,23 +98,23 @@ const SplitPhotos = () => {
                     padding: '15px 25px',
                     borderRadius: '10px',
                     backdropFilter: 'blur(10px)',
-                    borderLeft: '4px solid #38bdf8'
+                    borderLeft: `4px solid ${aboutData.team[0].color}`
                 }}>
                     <p style={{
-                        color: '#38bdf8',
+                        color: aboutData.team[0].color,
                         fontSize: '12px',
                         textTransform: 'uppercase',
                         letterSpacing: '2px',
                         marginBottom: '5px',
                         fontFamily: '"Inter", sans-serif'
-                    }}>Frontend Dev</p>
+                    }}>{aboutData.team[0].role}</p>
                     <h3 style={{
                         color: '#ffffff',
                         fontSize: '24px',
                         fontWeight: 700,
                         margin: 0,
                         fontFamily: '"Syne", sans-serif'
-                    }}>VATSAL</h3>
+                    }}>{aboutData.team[0].name}</h3>
                 </div>
             </div>
 
@@ -123,7 +128,7 @@ const SplitPhotos = () => {
                     height: '60vh',
                     borderRadius: '20px',
                     overflow: 'hidden',
-                    boxShadow: '0 30px 100px rgba(0, 212, 255, 0.2)',
+                    boxShadow: '0 15px 50px rgba(0, 212, 255, 0.1)',
                     border: '1px solid rgba(0, 212, 255, 0.3)',
                     background: '#111'
                 }}
@@ -144,17 +149,17 @@ const SplitPhotos = () => {
                     padding: '15px 25px',
                     borderRadius: '10px',
                     backdropFilter: 'blur(10px)',
-                    borderRight: '4px solid #00d4ff'
+                    borderRight: `4px solid ${aboutData.team[1].color}`
                 }}>
                     <p style={{
-                        color: '#00d4ff',
+                        color: aboutData.team[1].color,
                         fontSize: '12px',
                         textTransform: 'uppercase',
                         letterSpacing: '2px',
                         marginBottom: '5px',
                         textAlign: 'right',
                         fontFamily: '"Inter", sans-serif'
-                    }}>UI Designer</p>
+                    }}>{aboutData.team[1].role}</p>
                     <h3 style={{
                         color: '#ffffff',
                         fontSize: '24px',
@@ -162,7 +167,7 @@ const SplitPhotos = () => {
                         margin: 0,
                         textAlign: 'right',
                         fontFamily: '"Syne", sans-serif'
-                    }}>MANN</h3>
+                    }}>{aboutData.team[1].name}</h3>
                 </div>
             </div>
 
@@ -189,7 +194,7 @@ const SplitPhotos = () => {
                     fontFamily: '"Syne", sans-serif',
                     margin: 0
                 }}>
-                    V&M
+                    {aboutData.brand.title}
                 </h2>
                 <p style={{
                     color: '#a0a0a0',
@@ -199,7 +204,7 @@ const SplitPhotos = () => {
                     textTransform: 'uppercase',
                     fontFamily: '"Inter", sans-serif'
                 }}>
-                    Est. 2025
+                    {aboutData.brand.subtitle}
                 </p>
             </div>
         </div>

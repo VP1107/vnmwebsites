@@ -1,0 +1,11 @@
+{
+    "title": "LET'S BUILD SOMETHING AMAZING",
+    "email": "vnmcreationteam@gmail.com",
+    "form": {
+        "nameLabel": "Name",
+        "emailLabel": "Email",
+        "messageLabel": "Message",
+        "buttonText": "SEND",
+        "successMessage": "Thanks! We'll reach out within 24 hours."
+    }
+}

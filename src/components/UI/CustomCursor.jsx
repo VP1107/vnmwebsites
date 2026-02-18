@@ -20,24 +20,19 @@ const CustomCursor = () => {
         const setFollowerX = gsap.quickSetter(follower, 'x', 'px');
         const setFollowerY = gsap.quickSetter(follower, 'y', 'px');
 
-        // ✅ FIX: Initialize at center of screen, not (0,0)
         let mouseX = window.innerWidth / 2;
         let mouseY = window.innerHeight / 2;
         let followerX = window.innerWidth / 2;
         let followerY = window.innerHeight / 2;
         let rafId;
-        // ✅ FIX: Track if mouse has moved yet
-        let hasMouseMoved = false;
 
         const moveCursor = (e) => {
             mouseX = e.clientX;
             mouseY = e.clientY;
-            hasMouseMoved = true;
 
             setCursorX(mouseX);
             setCursorY(mouseY);
 
-            // ✅ FIX: Show cursor only after first mouse move
             if (cursor) cursor.style.opacity = '1';
             if (follower) follower.style.opacity = '0.5';
         };
@@ -52,7 +47,6 @@ const CustomCursor = () => {
             rafId = requestAnimationFrame(followCursor);
         };
 
-        // ✅ FIX: Hide cursors until mouse moves
         if (cursor) cursor.style.opacity = '0';
         if (follower) follower.style.opacity = '0';
 
@@ -94,6 +88,7 @@ const CustomCursor = () => {
         <>
             <div
                 ref={cursorRef}
+                className="custom-cursor-dot" // ✅ Added class for targeting
                 style={{
                     position: 'fixed',
                     width: '10px',
@@ -106,12 +101,13 @@ const CustomCursor = () => {
                     mixBlendMode: 'difference',
                     top: 0,
                     left: 0,
-                    opacity: 0, // ✅ Hidden until mouse moves
+                    opacity: 0,
                     willChange: 'transform'
                 }}
             />
             <div
                 ref={followerRef}
+                className="custom-cursor-ring" // ✅ Added class for targeting
                 style={{
                     position: 'fixed',
                     width: '40px',
@@ -121,7 +117,7 @@ const CustomCursor = () => {
                     pointerEvents: 'none',
                     zIndex: 9998,
                     transform: 'translate(-50%, -50%)',
-                    opacity: 0, // ✅ Hidden until mouse moves
+                    opacity: 0,
                     top: 0,
                     left: 0,
                     willChange: 'transform'

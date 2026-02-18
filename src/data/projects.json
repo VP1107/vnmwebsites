@@ -34,27 +34,5 @@
         ],
         "image": "images/chef4u-screenshot.webp",
         "link": "#"
-    },
-    {
-        "title": "Corporate UI",
-        "category": "Business Landing Page",
-        "description": "A professional corporate UI clone focused on high-end design aesthetics.",
-        "stack": [
-            "HTML",
-            "CSS"
-        ],
-        "image": "images/renav-official-screenshot.webp",
-        "link": "#"
-    },
-    {
-        "title": "Messaging UI",
-        "category": "App Interface Demo",
-        "description": "A complex UI demo for a messaging application with glassmorphism effects.",
-        "stack": [
-            "HTML",
-            "CSS"
-        ],
-        "image": "images/renav-messenger-screenshot.webp",
-        "link": "#"
     }
 ]

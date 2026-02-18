@@ -6,48 +6,12 @@ gsap.registerPlugin(ScrollTrigger);
 
 import './WorkShowcase.css';
 
-const projects = [
-  {
-    title: "Baby Bloom",
-    category: "Garbhasanskar & Prenatal Care",
-    description: "Comprehensive prenatal care platform with canvas-based particle animations, expert profiles, and community features.",
-    stack: ["HTML", "CSS", "JS", "Google Apps Script"],
-    image: `${import.meta.env.BASE_URL}images/babybloom-screenshot.webp`,
-    link: "#" // Add actual links if available
-  },
-  {
-    title: "Manan Shah",
-    category: "Professional Portfolio",
-    description: "A professional, minimalistic multi-page portfolio designed for clean aesthetics and clarity.",
-    stack: ["HTML", "CSS"],
-    image: `${import.meta.env.BASE_URL}images/manan-shah-screenshot.webp`,
-    link: "#"
-  },
-  {
-    title: "Chef4U",
-    category: "Catering Business",
-    description: "A premium catering service platform featuring elegant menu showcases, interactive booking forms, and a seamless mobile-responsive design.",
-    stack: ["HTML", "CSS", "JS"],
-    image: `${import.meta.env.BASE_URL}images/chef4u-screenshot.webp`,
-    link: "#"
-  },
-  {
-    title: "Corporate UI",
-    category: "Business Landing Page",
-    description: "A professional corporate UI clone focused on high-end design aesthetics.",
-    stack: ["HTML", "CSS"],
-    image: `${import.meta.env.BASE_URL}images/renav-official-screenshot.webp`,
-    link: "#"
-  },
-  {
-    title: "Messaging UI",
-    category: "App Interface Demo",
-    description: "A complex UI demo for a messaging application with glassmorphism effects.",
-    stack: ["HTML", "CSS"],
-    image: `${import.meta.env.BASE_URL}images/renav-messenger-screenshot.webp`,
-    link: "#"
-  }
-];
+import projectsData from '../../data/projects.json';
+
+const projects = projectsData.map(project => ({
+  ...project,
+  image: `${import.meta.env.BASE_URL}${project.image}`
+}));
 
 const WorkShowcase = () => {
   const containerRef = useRef(null);
@@ -128,11 +92,10 @@ const WorkShowcase = () => {
       ref={containerRef}
       className="work-showcase"
       style={{
-        background: '#000000',
         padding: '100px 5%',
         overflow: 'hidden',
         position: 'relative',
-        minHeight: '100vh' // Ensure it has height for observer
+        minHeight: '100vh'
       }}
     >
       {/* Top Gradient Fade */}
@@ -142,7 +105,7 @@ const WorkShowcase = () => {
         left: 0,
         width: '100%',
         height: '200px',
-        background: 'linear-gradient(to bottom, #000000, transparent)',
+        background: 'linear-gradient(to bottom, #080d18, transparent)',
         zIndex: 2,
         pointerEvents: 'none'
       }} />
@@ -154,7 +117,7 @@ const WorkShowcase = () => {
         left: 0,
         width: '100%',
         height: '200px',
-        background: 'linear-gradient(to top, #000000, transparent)',
+        background: 'linear-gradient(to top, #080d18, transparent)',
         zIndex: 2,
         pointerEvents: 'none'
       }} />
@@ -216,12 +179,6 @@ const WorkShowcase = () => {
                     <h2>{project.title}</h2>
                     <p>{project.description}</p>
 
-                    <div className="tech-stack">
-                      {project.stack.map((tech, i) => (
-                        <span key={i}>{tech}</span>
-                      ))}
-                    </div>
-
                     <a
                       href={project.link}
                       onClick={(e) => e.preventDefault()}
@@ -236,7 +193,7 @@ const WorkShowcase = () => {
         )}
       </div>
 
-    </section>
+    </section >
   );
 };
 

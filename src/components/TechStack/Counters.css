@@ -1,0 +1,69 @@
+/* ── Counters ─────────────────────────────────────────────────── */
+.counters {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem 4rem;
+    padding: 5rem 2rem;
+    background: transparent;
+    position: relative;
+    z-index: 1;
+}
+
+.counter-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    transform: translateY(30px);
+    text-align: center;
+    min-width: 120px;
+}
+
+.counter-item__number {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 700;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.6) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+}
+
+.counter-item__label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Dividers between items on wide screens */
+@media (min-width: 640px) {
+    .counter-item+.counter-item {
+        position: relative;
+    }
+
+    .counter-item+.counter-item::before {
+        content: '';
+        position: absolute;
+        left: -2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.08);
+    }
+}
+
+@media (max-width: 480px) {
+    .counters {
+        gap: 2rem;
+        padding: 3.5rem 1.5rem;
+    }
+}
