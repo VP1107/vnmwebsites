@@ -183,7 +183,7 @@ const FinalCTA = () => {
           poster={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
           className="fcta-video"
         >
-          <source src={`${import.meta.env.BASE_URL}videos/FinalCTA.mp4`} type="video/mp4" />
+          <source src={`${import.meta.env.BASE_URL}videos/FinalCTA.webm`} type="video/webm" />
         </video>
       </div>
 

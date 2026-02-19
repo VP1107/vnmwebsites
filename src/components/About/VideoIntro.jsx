@@ -172,7 +172,7 @@ const VideoIntro = () => {
           poster={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
           className="vi-video"
         >
-          <source src={`${import.meta.env.BASE_URL}videos/intro.mp4`} type="video/mp4" />
+          <source src={`${import.meta.env.BASE_URL}videos/intro.webm`} type="video/webm" />
         </video>
       </div>
 

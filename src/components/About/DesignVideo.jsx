@@ -156,7 +156,7 @@ const DesignVideo = () => {
                     autoPlay loop muted playsInline preload="none"
                     className="dv-video"
                 >
-                    <source src={`${import.meta.env.BASE_URL}videos/design-process.mp4`} type="video/mp4" />
+                    <source src={`${import.meta.env.BASE_URL}videos/design-process.webm`} type="video/webm" />
                 </video>
             </div>
 
