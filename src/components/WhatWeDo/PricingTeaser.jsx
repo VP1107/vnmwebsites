@@ -88,16 +88,20 @@ const PricingTeaser = () => {
                FIX #1: self.progress is 0–1, not 0–100.
                Corrected formula: Math.round(self.progress * 80) * 100
                which correctly produces 0 → 8000 as progress goes 0 → 1. */
-            // FIX #5: Capture the ScrollTrigger instance so we can kill it on cleanup.
-            const priceST = ScrollTrigger.create({
-                trigger: containerRef.current,
-                start: 'top 65%',
-                end: 'top 10%',
-                scrub: 1.5,
-                onUpdate(self) {
-                    const val = Math.round(self.progress * 80) * 100;
+            /* 5 ── PRICE COUNTER: scrub-linked from 0 → 8000 using Proxy Object for robustness */
+            const priceProxy = { val: 0 };
+            gsap.to(priceProxy, {
+                val: 8000,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: containerRef.current,
+                    start: 'top 85%',
+                    end: 'top 20%',
+                    scrub: 1,
+                },
+                onUpdate: () => {
                     if (priceRef.current) {
-                        priceRef.current.textContent = '₹' + val.toLocaleString('en-IN');
+                        priceRef.current.textContent = '₹0' + Math.round(priceProxy.val).toLocaleString('en-IN');
                     }
                 }
             });
@@ -106,7 +110,7 @@ const PricingTeaser = () => {
             gsap.fromTo(priceRef.current,
                 { scale: 0.55, opacity: 0, y: 40 },
                 {
-                    scale: 1, opacity: 1, y: 0, duration: 1, ease: 'power3.out',
+                    scale: 1, opacity: 1, y: 0, duration: 3, ease: 'power3.out',
                     scrollTrigger: {
                         trigger: containerRef.current,
                         start: 'top 72%',
@@ -116,32 +120,31 @@ const PricingTeaser = () => {
             );
 
             /* 7 ── SUBTITLE fade */
-            gsap.from(subtitleRef.current, {
-                opacity: 0, y: 26, duration: 0.9, ease: 'power3.out',
+            gsap.to(priceProxy, {
+                val: 8000,
+                ease: 'none',
                 scrollTrigger: {
-                    trigger: containerRef.current, start: 'top 62%',
-                    toggleActions: 'play none none none',
+                    trigger: containerRef.current,
+                    start: 'top 85%',
+                    end: 'top 20%',  // keep this
+                    scrub: 1,
+                },
+                onUpdate: () => {
+                    if (priceRef.current) {
+                        priceRef.current.textContent = '₹' + Math.round(priceProxy.val).toLocaleString('en-IN');
+                    }
                 }
             });
 
-            /* 8 ── CTA elastic bounce */
-            gsap.fromTo(ctaRef.current,
-                { y: 52, opacity: 0 },
+            // Move the entrance earlier so it's done before the counter is visible
+            gsap.fromTo(priceRef.current,
+                { scale: 0.55, opacity: 0, y: 40 },
                 {
-                    y: 0, opacity: 1, duration: 1.1, ease: 'elastic.out(1, 0.5)',
+                    scale: 1, opacity: 1, y: 0, duration: 1, ease: 'power3.out',
                     scrollTrigger: {
-                        trigger: containerRef.current, start: 'top 58%',
+                        trigger: containerRef.current,
+                        start: 'top 90%',  // ← was 72%, now fires earlier
                         toggleActions: 'play none none none',
-                        // FIX #3: Chain the glow pulse only after the entrance animation
-                        // completes, preventing the two animations from racing on boxShadow.
-                        onEnter: () => {
-                            gsap.to(ctaRef.current, {
-                                boxShadow: '0 0 52px rgba(56,189,248,0.7)',
-                                duration: 1.6, repeat: -1, yoyo: true, ease: 'sine.inOut',
-                                // Small delay so the entrance finishes (elastic ~1.1s) first
-                                delay: 1.2,
-                            });
-                        },
                     }
                 }
             );
@@ -158,9 +161,8 @@ const PricingTeaser = () => {
                 });
             }
 
-            // FIX #5: Return priceST so it can be killed via ctx.revert(),
-            // but also store it for the explicit cleanup below.
-            return priceST;
+            // gsap.to implies auto-cleanup via context
+            // return priceST; // Removed
 
         }, containerRef);
 

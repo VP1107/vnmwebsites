@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { gsap} from '../../gsap-config';
+import { gsap } from '../../gsap-config';
 
 const CustomCursor = () => {
     const cursorRef = useRef(null);
@@ -47,8 +47,8 @@ const CustomCursor = () => {
             rafId = requestAnimationFrame(followCursor);
         };
 
-        if (cursor) cursor.style.opacity = '0';
-        if (follower) follower.style.opacity = '0';
+        if (cursor) cursor.style.opacity = '1';
+        if (follower) follower.style.opacity = '0.5';
 
         followCursor();
         window.addEventListener('mousemove', moveCursor, { passive: true });
@@ -64,10 +64,15 @@ const CustomCursor = () => {
         };
 
         const handleMouseLeave = (e) => {
-            if (e.target.closest('button, a')) {
-                gsap.to([cursor, follower], {
+            if (e.target.closest('button, a') && !e.relatedTarget?.closest('button, a')) {
+                gsap.to([cursor], {
                     scale: 1,
                     backgroundColor: '#ffffff',
+                    duration: 0.3
+                });
+                gsap.to([follower], {
+                    scale: 1,
+                    backgroundColor: 'transparent',
                     duration: 0.3
                 });
             }
@@ -96,7 +101,7 @@ const CustomCursor = () => {
                     backgroundColor: '#ffffff',
                     borderRadius: '50%',
                     pointerEvents: 'none',
-                    zIndex: 9999,
+                    zIndex: 100003,
                     transform: 'translate(-50%, -50%)',
                     mixBlendMode: 'difference',
                     top: 0,

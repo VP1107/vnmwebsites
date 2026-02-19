@@ -4,7 +4,7 @@ import { gsap, ScrollTrigger } from '../../gsap-config';
 
 
 // REPLACE THIS URL WITH YOUR OWN DEPLOYMENT URL FROM THE MANUAL
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyIhzk9yJeQbFg5FlZGvjDKqzpcGHptFoa7veJ7o5wVkR06GGbgasCvV03SYJ1GHtur6A/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbySOrWyHvsRLY525xpzXYX7YX2AaNeB2FbeTaSXABGDPPxnoNwDH1ozzLgnRR0_h8wdWw/exec";
 
 // ── Field component — CSS handles label float, no GSAP on labels ──────────────
 const Field = ({ id, label, type = 'text', rows, required, value, onChange }) => {
@@ -55,7 +55,7 @@ const ContactForm = () => {
     const submitBtnRef = useRef(null);
     const successRef = useRef(null);
 
-    const [fields, setFields] = useState({ name: '', email: '', message: '' });
+    const [fields, setFields] = useState({ name: '', email: '', phone: '', message: '' });
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
     const [charCount, setCharCount] = useState(0);
@@ -127,28 +127,12 @@ const ContactForm = () => {
                 date: new Date().toLocaleString(),
                 name: fields.name,
                 email: fields.email,
+                phone: fields.phone,
                 message: fields.message
             };
 
-            // Don't send if URL is placeholder (optional check, or just let it fail/log)
-            if (GOOGLE_SCRIPT_URL.includes("YOUR_SCRIPT_ID")) {
-                console.warn("Google Script URL is NOT set! See MANUAL_GOOGLE_SHEETS_SETUP.md");
-                // For demo purposes we might just simulate success if they haven't set it up yet,
-                // BUT better to try the fetch and if it fails, handle it.
-                // However, CORS might be tricky if not set up.
-                // For now, let's proceed to fetch. 
-            }
-
-            // Using 'no-cors' mode is standard for Google Apps Script forms to avoid CORS errors,
-            // ALTHOUGH standard 'POST' often works if the script handles OPTIONS.
-            // But usually, standard fetch to G-Sheets requires 'no-cors' OR a redirect handling.
-            // Simpler: use no-cors. we won't get a JSON response back easily but it submits.
-            // OR: use Content-Type: text/plain to avoid preflight options (simple request).
-
             await fetch(GOOGLE_SCRIPT_URL, {
                 method: "POST",
-                // "text/plain" content type prevents browser from sending OPTIONS preflight
-                // which google script apps often don't handle well without extra code.
                 body: JSON.stringify(formData)
             });
 
@@ -278,6 +262,13 @@ const ContactForm = () => {
                             value={fields.email}
                             onChange={handleChange('email')}
                             required
+                        />
+                        <Field
+                            id="cf-phone"
+                            label="Phone number"
+                            type="tel"
+                            value={fields.phone}
+                            onChange={handleChange('phone')}
                         />
                         <Field
                             id="cf-message"

@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import {ScrollTrigger } from '../../gsap-config';
+import { ScrollTrigger } from '../../gsap-config';
 import SectionIntro from './SectionIntro';
 import ServiceCard from './ServiceCard';
 import PricingTeaser from './PricingTeaser';
@@ -47,7 +47,7 @@ const WhatWeDo = () => {
 
             {services.map((service, index) => (
                 <ServiceCard
-                    key={service.id}
+                    key={index}
                     service={service}
                     index={index}
                     total={services.length}
