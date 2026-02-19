@@ -7,7 +7,6 @@ export default defineConfig({
         react(),
         visualizer({ open: false })
     ],
-    base: '/vnmwebsites/',
     build: {
         rollupOptions: {
             output: {
