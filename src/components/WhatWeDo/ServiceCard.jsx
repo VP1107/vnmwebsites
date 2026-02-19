@@ -247,13 +247,13 @@ const ServiceCard = ({ service, index, total }) => {
     const videoMp4Src = (() => {
         if (!service.videoSrc) return '';
         const url = service.videoSrc.split('?')[0]; // strip query params for ext check
-        if (url.endsWith('.webm')) return service.videoSrc.replace('.webm', '.mp4');
-        if (url.endsWith('.mp4')) return service.videoSrc; // already mp4, reuse
+        if (url.endsWith('.webm')) return service.videoSrc.replace('.webm', '.webm');
+        if (url.endsWith('.webm')) return service.videoSrc; // already mp4, reuse
         // Unknown extension — append before any query string
         const qIdx = service.videoSrc.indexOf('?');
         return qIdx > -1
-            ? service.videoSrc.slice(0, qIdx) + '.mp4' + service.videoSrc.slice(qIdx)
-            : service.videoSrc + '.mp4';
+            ? service.videoSrc.slice(0, qIdx) + '.webm' + service.videoSrc.slice(qIdx)
+            : service.videoSrc + '.webm';
     })();
 
     const accent = service.color || '#38bdf8';
@@ -307,17 +307,15 @@ const ServiceCard = ({ service, index, total }) => {
                         loop muted playsInline preload="none"
                         style={{
                             width: '100%', height: '100%', objectFit: 'cover',
-                            filter: (isHovered || touch)
-                                ? 'brightness(0.72) saturate(1.15)'
-                                : 'brightness(0.4) saturate(0.65)',
+                            // filter: (isHovered || touch)
+                            //     ? 'brightness(0.72) saturate(1.15)'
+                            //     : 'brightness(0.4) saturate(0.65)',
                             transition: 'filter 0.55s ease',
                             opacity: isLoaded ? 1 : 0,
                             willChange: 'filter',
                         }}
                     >
                         <source src={service.videoSrc} type="video/webm" />
-                        {/* FIX #5: Safe mp4 fallback */}
-                        <source src={videoMp4Src} type="video/mp4" />
                     </video>
                 </div>
 
@@ -335,7 +333,7 @@ const ServiceCard = ({ service, index, total }) => {
                 {/* LAYER 3: Radial vignette */}
                 <div style={{
                     position: 'absolute', inset: 0, zIndex: 3, pointerEvents: 'none',
-                    background: 'radial-gradient(ellipse 85% 85% at 50% 50%, transparent 20%, rgba(0,0,0,0.9) 100%)',
+                    background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 20%, rgba(0,0,0,0.9) 100%)',
                 }} />
 
                 {/* LAYER 4: Accent border glow */}
