@@ -17,6 +17,7 @@
     background: #000;
 }
 
+/* Layer 1: video bg wrapper */
 .vi-bg {
     position: absolute;
     inset: -14% 0;
@@ -32,6 +33,7 @@
     will-change: transform;
 }
 
+/* Layer 2: vignette overlay */
 .vi-overlay {
     position: absolute;
     inset: 0;
@@ -40,6 +42,7 @@
     pointer-events: none;
 }
 
+/* Layer 3: cyan dot grid */
 .vi-grid {
     position: absolute;
     inset: 0;
@@ -52,6 +55,7 @@
     will-change: transform;
 }
 
+/* Layer 4: scan line */
 .vi-scan {
     position: absolute;
     left: 0;
@@ -64,6 +68,7 @@
     will-change: transform;
 }
 
+/* Edge fades */
 .vi-fade {
     position: absolute;
     left: 0;
@@ -84,6 +89,7 @@
     background: linear-gradient(to top, #000, transparent);
 }
 
+/* Corner brackets */
 .vi-corner {
     position: absolute;
     width: 44px;
@@ -106,6 +112,7 @@
     border-right: 1px solid #38bdf8;
 }
 
+/* Foreground content */
 .vi-content {
     position: absolute;
     top: 50%;
@@ -154,6 +161,7 @@
     overflow: hidden;
 }
 
+/* Scroll hint */
 .vi-scroll-hint {
     position: absolute;
     bottom: 36px;
@@ -182,10 +190,13 @@
 }
 
 @keyframes scrollPulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 0.3;
         transform: scaleY(0.6);
     }
+
     50% {
         opacity: 1;
         transform: scaleY(1);
@@ -207,6 +218,7 @@
     overflow: hidden;
 }
 
+/* Ambient glows */
 .sp-glow {
     position: absolute;
     width: 500px;
@@ -228,6 +240,7 @@
     right: -10%;
 }
 
+/* Cards */
 .sp-card {
     position: relative;
     height: 60vh;
@@ -238,8 +251,13 @@
     will-change: transform;
 }
 
-.sp-card--left { border-radius: 2px; }
-.sp-card--right { border-radius: 2px; }
+.sp-card--left {
+    border-radius: 2px;
+}
+
+.sp-card--right {
+    border-radius: 2px;
+}
 
 .sp-img-wrap {
     width: 100%;
@@ -262,6 +280,7 @@
     background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 55%);
 }
 
+/* Name tags */
 .sp-nametag {
     position: absolute;
     bottom: 24px;
@@ -304,6 +323,7 @@
     overflow: hidden;
 }
 
+/* Corner accent dot */
 .sp-corner-accent {
     position: absolute;
     top: 0;
@@ -313,6 +333,7 @@
     opacity: 0.6;
 }
 
+/* Center block */
 .sp-center {
     z-index: 3;
     text-align: center;
@@ -351,6 +372,7 @@
     color: rgba(255, 255, 255, 0.35);
 }
 
+/* Stats row */
 .sp-stats {
     display: flex;
     flex-direction: column;
@@ -392,6 +414,7 @@
     background: #000;
 }
 
+/* Scrub progress bar */
 .dv-progress-track {
     position: absolute;
     top: 0;
@@ -412,6 +435,7 @@
     transform: scaleX(0);
 }
 
+/* Layer 1: video bg */
 .dv-bg {
     position: absolute;
     inset: 0;
@@ -426,6 +450,7 @@
     filter: brightness(0.38) saturate(0.65);
 }
 
+/* Layer 2: vignette */
 .dv-overlay {
     position: absolute;
     inset: 0;
@@ -434,6 +459,7 @@
     pointer-events: none;
 }
 
+/* Layer 3: grid */
 .dv-grid {
     position: absolute;
     inset: 0;
@@ -446,6 +472,7 @@
     will-change: transform;
 }
 
+/* Edge fades */
 .dv-fade {
     position: absolute;
     left: 0;
@@ -466,6 +493,7 @@
     background: linear-gradient(to top, #000, transparent);
 }
 
+/* Corner brackets */
 .dv-corner {
     position: absolute;
     width: 40px;
@@ -488,8 +516,7 @@
     border-right: 1px solid #38bdf8;
 }
 
-/* FIX 1: overflow:hidden on the container clips chars that are mid-travel
-   (y:120% or y:-110%) from being visible when they shouldn't be */
+/* Manifesto lines — all stacked at same grid cell */
 .dv-lines {
     position: absolute;
     top: 50%;
@@ -501,13 +528,8 @@
     text-align: center;
     display: grid;
     place-items: center;
-    overflow: hidden;
 }
 
-/* FIX 2: NO opacity:0 here — GSAP sets the initial state via gsap.set() in
-   useEffect before ScrollTriggers fire. CSS opacity:0 was removed from a
-   previous edit and caused all lines to show simultaneously. The correct
-   approach is gsap.set(chars, { y:'120%', opacity:0 }) in JS. */
 .dv-line {
     grid-area: 1 / 1;
     font-family: 'Outfit', sans-serif;
@@ -518,9 +540,10 @@
     text-transform: uppercase;
     color: #fff;
     margin: 0;
+    /* Default invisible until GSAP takes over */
+    opacity: 0;
     will-change: transform, opacity, filter;
-    overflow: visible;
-    white-space: nowrap;
+    overflow: hidden;
 }
 
 .dv-line--accent {
@@ -529,6 +552,7 @@
     text-shadow: 0 0 60px rgba(56, 189, 248, 0.4);
 }
 
+/* Section index */
 .dv-index {
     position: absolute;
     bottom: 28px;
@@ -554,6 +578,7 @@
     background: #000;
 }
 
+/* Layer 1: video bg */
 .fcta-bg {
     position: absolute;
     inset: -12% 0;
@@ -568,6 +593,7 @@
     filter: brightness(0.25) blur(2px) saturate(0.7);
 }
 
+/* Layer 2: vignette */
 .fcta-overlay {
     position: absolute;
     inset: 0;
@@ -576,6 +602,7 @@
     pointer-events: none;
 }
 
+/* Layer 3: glow blob */
 .fcta-glow {
     position: absolute;
     top: 20%;
@@ -591,6 +618,7 @@
     will-change: transform;
 }
 
+/* Layer 4: grid */
 .fcta-grid {
     position: absolute;
     inset: 0;
@@ -603,6 +631,7 @@
     will-change: transform;
 }
 
+/* Edge fades */
 .fcta-fade {
     position: absolute;
     left: 0;
@@ -623,6 +652,7 @@
     background: linear-gradient(to top, #000, transparent);
 }
 
+/* Corner brackets */
 .fcta-corner {
     position: absolute;
     width: 44px;
@@ -645,9 +675,10 @@
     border-right: 1px solid #38bdf8;
 }
 
+/* Content */
 .fcta-content {
     position: relative;
-    z-index: 10;
+    z-index: 7;
     text-align: center;
     width: 90%;
     max-width: 720px;
@@ -658,6 +689,7 @@
     padding: 80px 0;
 }
 
+/* Label row */
 .fcta-label-row {
     display: flex;
     align-items: center;
@@ -683,6 +715,7 @@
     transform-origin: left center;
 }
 
+/* Heading */
 .fcta-heading {
     font-family: 'Outfit', sans-serif;
     font-size: clamp(44px, 7.5vw, 100px);
@@ -695,6 +728,7 @@
     overflow: hidden;
 }
 
+/* Accent word */
 .fcta-accent {
     font-family: 'Outfit', sans-serif;
     font-size: clamp(44px, 7.5vw, 100px);
@@ -710,6 +744,7 @@
     font-style: italic;
 }
 
+/* CTA button */
 .fcta-btn {
     padding: 18px 56px;
     font-family: 'DM Sans', sans-serif;
@@ -726,6 +761,7 @@
     margin-bottom: 48px;
 }
 
+/* Perks */
 .fcta-perks {
     display: flex;
     flex-wrap: wrap;

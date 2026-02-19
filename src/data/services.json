@@ -8,7 +8,7 @@
         "color": "#38bdf8"
     },
     {
-        "id": 2,
+        "id": 1,
         "title": "BUSINESS",
         "subtitle": "E-commerce • Restaurants • Local Shops",
         "videoSrc": "videos/FinalCTA.webm",
@@ -16,7 +16,7 @@
         "color": "#00d4ff"
     },
     {
-        "id": 3,
+        "id": 1,
         "title": "PORTFOLIOS",
         "subtitle": "Creative • Professional • Personal",
         "videoSrc": "videos/design-process.webm",

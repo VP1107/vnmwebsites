@@ -1,7 +1,7 @@
 .footer {
     width: 100vw;
     background: #000;
-    border-top: 1px solid rgba(0, 255, 136, 0.2);
+    border-top: 1px solid #38bdf8;
     padding: var(--spacing-xxl) var(--spacing-lg);
 }
 

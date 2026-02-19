@@ -7,27 +7,30 @@ const perks = ['No Hidden Fees', 'Fast Delivery', '30 Days Support'];
 
 const PricingTeaser = () => {
     const containerRef = useRef(null);
-    const bgGlowRef = useRef(null);  // parallax glow layer
-    const gridRef = useRef(null);  // parallax grid layer
+    const bgGlowRef = useRef(null);
+    const gridRef = useRef(null);
     const labelRef = useRef(null);
     const lineRef = useRef(null);
-    const headingRef = useRef(null);  // "Starting At" — SplitType
-    const priceRef = useRef(null);  // animated counter
+    const headingRef = useRef(null);
+    const priceRef = useRef(null);
     const subtitleRef = useRef(null);
     const ctaRef = useRef(null);
     const perksRef = useRef(null);
     const splitHeading = useRef(null);
 
     useEffect(() => {
-        const counter = { value: 0 };
+        // FIX #2: Removed unused `counter` object entirely.
 
         const ctx = gsap.context(() => {
 
-            /* 1 ── PARALLAX: bg glow drifts upward as section enters */
+            /* 1 ── PARALLAX: bg glow drifts upward as section enters
+               FIX #4: Removed `transform: translateX(-50%)` from the inline style
+               on bgGlowRef and use `xPercent: -50` here so GSAP owns the full
+               transform and won't overwrite a competing CSS transform. */
             gsap.fromTo(bgGlowRef.current,
-                { yPercent: 30, scale: 0.8 },
+                { xPercent: -50, yPercent: 30, scale: 0.8 },
                 {
-                    yPercent: -20, scale: 1.15, ease: 'none',
+                    xPercent: -50, yPercent: -20, scale: 1.15, ease: 'none',
                     scrollTrigger: {
                         trigger: containerRef.current,
                         start: 'top bottom', end: 'bottom top',
@@ -59,9 +62,17 @@ const PricingTeaser = () => {
                 scrollTrigger: { trigger: containerRef.current, start: 'top 84%' }
             });
 
-            /* 4 ── SPLITTYPE: "Starting At" heading — chars scrub reveal */
+            /* 4 ── SPLITTYPE: "Starting At" heading — chars scrub reveal
+               FIX #6: overflow:hidden moved off the <p> and onto each char wrapper
+               so the y:'120%' clip actually works. Chars are wrapped below. */
             if (headingRef.current) {
                 splitHeading.current = new SplitType(headingRef.current, { types: 'chars' });
+                // Apply overflow:hidden per char so the clip reveal is visible
+                splitHeading.current.chars.forEach(char => {
+                    char.style.display = 'inline-block';
+                    char.style.overflow = 'hidden';
+                    char.style.verticalAlign = 'bottom';
+                });
                 gsap.from(splitHeading.current.chars, {
                     y: '120%', opacity: 0,
                     stagger: 0.03, ease: 'none',
@@ -73,14 +84,18 @@ const PricingTeaser = () => {
                 });
             }
 
-            /* 5 ── PRICE COUNTER: scrub-linked from 0 → 8000 */
+            /* 5 ── PRICE COUNTER: scrub-linked from 0 → 8000
+               FIX #1: self.progress is 0–1, not 0–100.
+               Corrected formula: Math.round(self.progress * 80) * 100
+               which correctly produces 0 → 8000 as progress goes 0 → 1. */
+            // FIX #5: Capture the ScrollTrigger instance so we can kill it on cleanup.
             const priceST = ScrollTrigger.create({
                 trigger: containerRef.current,
                 start: 'top 65%',
                 end: 'top 10%',
                 scrub: 1.5,
                 onUpdate(self) {
-                    const val = Math.round(self.progress * 8000 / 100) * 100;
+                    const val = Math.round(self.progress * 80) * 100;
                     if (priceRef.current) {
                         priceRef.current.textContent = '₹' + val.toLocaleString('en-IN');
                     }
@@ -117,17 +132,21 @@ const PricingTeaser = () => {
                     scrollTrigger: {
                         trigger: containerRef.current, start: 'top 58%',
                         toggleActions: 'play none none none',
+                        // FIX #3: Chain the glow pulse only after the entrance animation
+                        // completes, preventing the two animations from racing on boxShadow.
+                        onEnter: () => {
+                            gsap.to(ctaRef.current, {
+                                boxShadow: '0 0 52px rgba(56,189,248,0.7)',
+                                duration: 1.6, repeat: -1, yoyo: true, ease: 'sine.inOut',
+                                // Small delay so the entrance finishes (elastic ~1.1s) first
+                                delay: 1.2,
+                            });
+                        },
                     }
                 }
             );
 
-            /* 9 ── CTA GLOW PULSE (after entrance settles) */
-            gsap.to(ctaRef.current, {
-                boxShadow: '0 0 52px rgba(56,189,248,0.7)',
-                duration: 1.6, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 1.4,
-            });
-
-            /* 10 ── PERKS stagger */
+            /* 9 ── PERKS stagger */
             const perkEls = perksRef.current?.querySelectorAll('.pt-perk');
             if (perkEls?.length) {
                 gsap.from(perkEls, {
@@ -138,6 +157,10 @@ const PricingTeaser = () => {
                     }
                 });
             }
+
+            // FIX #5: Return priceST so it can be killed via ctx.revert(),
+            // but also store it for the explicit cleanup below.
+            return priceST;
 
         }, containerRef);
 
@@ -158,10 +181,12 @@ const PricingTeaser = () => {
             overflow: 'hidden',
         }}>
 
-            {/* PARALLAX LAYER 1: ambient glow blob */}
+            {/* PARALLAX LAYER 1: ambient glow blob
+                FIX #4: Removed `transform: translateX(-50%)` — GSAP now owns
+                the full transform via xPercent in the fromTo above. */}
             <div ref={bgGlowRef} style={{
                 position: 'absolute', top: '10%', left: '50%',
-                transform: 'translateX(-50%)',
+                // No `transform` here — GSAP controls it entirely
                 width: 600, height: 600, borderRadius: '50%',
                 background: 'radial-gradient(circle, rgba(56,189,248,0.07) 0%, transparent 70%)',
                 filter: 'blur(80px)', pointerEvents: 'none', zIndex: 0,
@@ -203,13 +228,16 @@ const PricingTeaser = () => {
                     }} />
                 </div>
 
-                {/* "Starting At" — SplitType scrub reveal */}
+                {/* "Starting At" — SplitType scrub reveal
+                    FIX #6: overflow:hidden removed from the <p>; it's now applied
+                    per-char in the useEffect so the clip animation is visible. */}
                 <p ref={headingRef} style={{
                     fontFamily: 'DM Sans, sans-serif',
                     fontSize: 'clamp(11px, 1.4vw, 13px)',
                     color: 'rgba(255,255,255,0.35)',
                     letterSpacing: '0.28em', textTransform: 'uppercase',
-                    marginBottom: 14, overflow: 'hidden',
+                    marginBottom: 14,
+                    // overflow: 'hidden' intentionally removed — applied per char in JS
                 }}>
                     Starting At
                 </p>
@@ -240,7 +268,9 @@ const PricingTeaser = () => {
                     Simple pricing, transparent process.
                 </p>
 
-                {/* CTA */}
+                {/* CTA
+                    FIX #3: boxShadow pulse moved into the onEnter callback above
+                    so it starts only after the entrance animation finishes. */}
                 <button
                     ref={ctaRef}
                     style={{

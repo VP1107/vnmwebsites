@@ -21,7 +21,7 @@ const SplitPhotos = () => {
   const splitRight    = useRef(null);
   const splitBrand    = useRef(null);
 
-  const team    = aboutData.team   || [{ name:'Vatsal', role:'Designer', color:'#38bdf8' }, { name:'Mann', role:'Developer', color:'#00d4ff' }];
+  const team    = aboutData.team   || [{ name:'Vatsal', role:'Co-Founder', color:'#38bdf8' }, { name:'Mann', role:'Co-Founder', color:'#00d4ff' }];
   const brand   = aboutData.brand  || { title: 'V&M', subtitle: 'Two builders. One vision.' };
 
   const stats = [
@@ -196,7 +196,7 @@ const SplitPhotos = () => {
         <div className="sp-img-wrap">
           <img
             ref={leftImgRef}
-            src={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
+            src={`${import.meta.env.BASE_URL}images/Vatsal.webp`}
             alt={team[0]?.name}
             className="sp-img"
           />
@@ -241,7 +241,7 @@ const SplitPhotos = () => {
         <div className="sp-img-wrap">
           <img
             ref={rightImgRef}
-            src={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
+            src={`${import.meta.env.BASE_URL}images/Mann.webp`}
             alt={team[1]?.name}
             className="sp-img"
           />

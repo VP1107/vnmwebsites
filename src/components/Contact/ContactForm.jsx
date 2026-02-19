@@ -3,6 +3,9 @@ import './ContactForm.css';
 import { gsap, ScrollTrigger } from '../../gsap-config';
 
 
+// REPLACE THIS URL WITH YOUR OWN DEPLOYMENT URL FROM THE MANUAL
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyIhzk9yJeQbFg5FlZGvjDKqzpcGHptFoa7veJ7o5wVkR06GGbgasCvV03SYJ1GHtur6A/exec";
+
 // ── Field component — CSS handles label float, no GSAP on labels ──────────────
 const Field = ({ id, label, type = 'text', rows, required, value, onChange }) => {
     const [focused, setFocused] = useState(false);
@@ -100,7 +103,7 @@ const ContactForm = () => {
     };
 
     // ── Submit ────────────────────────────────────────────────────────────────
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (sending || sent) return;
         setSending(true);
@@ -118,44 +121,81 @@ const ContactForm = () => {
             ease: 'power1.inOut',
         });
 
-        // 2. Stagger fields out
-        const fieldWraps = form.querySelectorAll('.field-wrap');
-        gsap.to(fieldWraps, {
-            opacity: 0,
-            y: -24,
-            stagger: 0.06,
-            duration: 0.5,
-            ease: 'power2.in',
-            delay: 0.2,
-        });
+        try {
+            // 2. Add data sending logic
+            const formData = {
+                date: new Date().toLocaleString(),
+                name: fields.name,
+                email: fields.email,
+                message: fields.message
+            };
 
-        // 3. Fade submit row
-        gsap.to('.submit-row', {
-            opacity: 0,
-            duration: 0.4,
-            delay: 0.4,
-        });
-
-        // 4. Reveal success
-        setTimeout(() => {
-            setSent(true);
-            setSending(false);
-
-            if (success) {
-                success.style.display = 'flex';
-                gsap.fromTo(
-                    success.children,
-                    { opacity: 0, y: 20 },
-                    {
-                        opacity: 1,
-                        y: 0,
-                        stagger: 0.1,
-                        duration: 0.7,
-                        ease: 'power3.out',
-                    }
-                );
+            // Don't send if URL is placeholder (optional check, or just let it fail/log)
+            if (GOOGLE_SCRIPT_URL.includes("YOUR_SCRIPT_ID")) {
+                console.warn("Google Script URL is NOT set! See MANUAL_GOOGLE_SHEETS_SETUP.md");
+                // For demo purposes we might just simulate success if they haven't set it up yet,
+                // BUT better to try the fetch and if it fails, handle it.
+                // However, CORS might be tricky if not set up.
+                // For now, let's proceed to fetch. 
             }
-        }, 900);
+
+            // Using 'no-cors' mode is standard for Google Apps Script forms to avoid CORS errors,
+            // ALTHOUGH standard 'POST' often works if the script handles OPTIONS.
+            // But usually, standard fetch to G-Sheets requires 'no-cors' OR a redirect handling.
+            // Simpler: use no-cors. we won't get a JSON response back easily but it submits.
+            // OR: use Content-Type: text/plain to avoid preflight options (simple request).
+
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                // "text/plain" content type prevents browser from sending OPTIONS preflight
+                // which google script apps often don't handle well without extra code.
+                body: JSON.stringify(formData)
+            });
+
+            // 3. Stagger fields out (Visual success flow)
+            const fieldWraps = form.querySelectorAll('.field-wrap');
+            gsap.to(fieldWraps, {
+                opacity: 0,
+                y: -24,
+                stagger: 0.06,
+                duration: 0.5,
+                ease: 'power2.in',
+                delay: 0.2,
+            });
+
+            // 4. Fade submit row
+            gsap.to('.submit-row', {
+                opacity: 0,
+                duration: 0.4,
+                delay: 0.4,
+            });
+
+            // 5. Reveal success
+            setTimeout(() => {
+                setSent(true);
+                setSending(false);
+
+                if (success) {
+                    success.style.display = 'flex';
+                    gsap.fromTo(
+                        success.children,
+                        { opacity: 0, y: 20 },
+                        {
+                            opacity: 1,
+                            y: 0,
+                            stagger: 0.1,
+                            duration: 0.7,
+                            ease: 'power3.out',
+                        }
+                    );
+                }
+            }, 900);
+
+        } catch (error) {
+            console.error("Form submission error", error);
+            setSending(false);
+            alert("Something went wrong. Please try again or email us directly.");
+        }
     };
 
     // ── Button hover — GSAP only on the border glow, not transform ───────────
@@ -208,10 +248,10 @@ const ContactForm = () => {
                     <div className="contact-direct">
                         <span className="contact-direct__label">Or reach us directly</span>
                         <a
-                            href="mailto:hello@vmcreations.com"
+                            href="mailto:vm.creationteam@gmail.com"
                             className="contact-direct__link interactive"
                         >
-                            hello@vmcreations.com
+                            vm.creationteam@gmail.com
                         </a>
                     </div>
                 </div>

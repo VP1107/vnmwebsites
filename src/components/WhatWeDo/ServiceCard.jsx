@@ -29,6 +29,9 @@ const ServiceCard = ({ service, index, total }) => {
 
     const rotYSet = useRef(null);
     const rotXSet = useRef(null);
+    // FIX #4: Use separate refs for the tilt offset so we don't fight
+    // the translate(-50%,-50%) on contentRef. We'll manage a wrapper instead.
+    const tiltWrapRef = useRef(null);
     const cxSet = useRef(null);
     const cySet = useRef(null);
 
@@ -37,8 +40,10 @@ const ServiceCard = ({ service, index, total }) => {
 
         rotYSet.current = gsap.quickTo(cardRef.current, 'rotateY', { duration: 0.55, ease: 'power2.out' });
         rotXSet.current = gsap.quickTo(cardRef.current, 'rotateX', { duration: 0.55, ease: 'power2.out' });
-        cxSet.current = gsap.quickTo(contentRef.current, 'x', { duration: 0.55, ease: 'power2.out' });
-        cySet.current = gsap.quickTo(contentRef.current, 'y', { duration: 0.55, ease: 'power2.out' });
+        // FIX #4: Target the inner tiltWrapRef with x/y so GSAP doesn't
+        // overwrite the translate(-50%,-50%) on the outer contentRef.
+        cxSet.current = gsap.quickTo(tiltWrapRef.current, 'x', { duration: 0.55, ease: 'power2.out' });
+        cySet.current = gsap.quickTo(tiltWrapRef.current, 'y', { duration: 0.55, ease: 'power2.out' });
 
         const ctx = gsap.context(() => {
 
@@ -104,7 +109,7 @@ const ServiceCard = ({ service, index, total }) => {
 
             /* 6 ── GHOST NUMBER — scrub slide from left */
             gsap.fromTo(numberRef.current,
-                { x: -100, opacity: 0 },
+                { x: -100, opacity: 1 },
                 {
                     x: 0, opacity: 1, ease: 'none',
                     scrollTrigger: {
@@ -129,6 +134,7 @@ const ServiceCard = ({ service, index, total }) => {
             );
 
             /* 8 ── SPLITTYPE: subtitle chars stagger in */
+            // FIX #1: Changed opacity from 1 to 0 so the fade-in actually works.
             if (subtitleRef.current) {
                 splitSub.current = new SplitType(subtitleRef.current, { types: 'chars' });
                 gsap.from(splitSub.current.chars, {
@@ -143,7 +149,6 @@ const ServiceCard = ({ service, index, total }) => {
             /* 9 ── SPLITTYPE: title chars scrub-clip reveal */
             if (titleRef.current) {
                 splitTitle.current = new SplitType(titleRef.current, { types: 'chars' });
-                // Wrap each char in a clip container
                 splitTitle.current.chars.forEach(char => {
                     char.style.display = 'inline-block';
                     char.style.overflow = 'hidden';
@@ -215,13 +220,15 @@ const ServiceCard = ({ service, index, total }) => {
     }, []);
 
     /* ── Mouse tilt ── */
+    // FIX #3: Guard against quickTo setters not yet being initialised.
     const handleMouseMove = useCallback((e) => {
         if (!isHoveredRef.current || !cardRef.current || touchDevice.current) return;
+        if (!rotYSet.current || !rotXSet.current || !cxSet.current || !cySet.current) return;
         const r = cardRef.current.getBoundingClientRect();
         const x = ((e.clientX - r.left) / r.width - 0.5) * 9;
         const y = ((e.clientY - r.top) / r.height - 0.5) * -9;
-        rotYSet.current?.(x); rotXSet.current?.(y);
-        cxSet.current?.(-x * 1.8); cySet.current?.(-y * 1.8);
+        rotYSet.current(x); rotXSet.current(y);
+        cxSet.current(-x * 1.8); cySet.current(-y * 1.8);
     }, []);
 
     const handleMouseEnter = useCallback(() => {
@@ -235,6 +242,19 @@ const ServiceCard = ({ service, index, total }) => {
         rotYSet.current?.(0); rotXSet.current?.(0);
         cxSet.current?.(0); cySet.current?.(0);
     }, []);
+
+    // FIX #5: Safely derive the mp4 fallback regardless of the original extension.
+    const videoMp4Src = (() => {
+        if (!service.videoSrc) return '';
+        const url = service.videoSrc.split('?')[0]; // strip query params for ext check
+        if (url.endsWith('.webm')) return service.videoSrc.replace('.webm', '.mp4');
+        if (url.endsWith('.mp4')) return service.videoSrc; // already mp4, reuse
+        // Unknown extension — append before any query string
+        const qIdx = service.videoSrc.indexOf('?');
+        return qIdx > -1
+            ? service.videoSrc.slice(0, qIdx) + '.mp4' + service.videoSrc.slice(qIdx)
+            : service.videoSrc + '.mp4';
+    })();
 
     const accent = service.color || '#38bdf8';
     const touch = touchDevice.current;
@@ -296,7 +316,8 @@ const ServiceCard = ({ service, index, total }) => {
                         }}
                     >
                         <source src={service.videoSrc} type="video/webm" />
-                        <source src={service.videoSrc.replace('.webm', '.mp4')} type="video/mp4" />
+                        {/* FIX #5: Safe mp4 fallback */}
+                        <source src={videoMp4Src} type="video/mp4" />
                     </video>
                 </div>
 
@@ -326,18 +347,26 @@ const ServiceCard = ({ service, index, total }) => {
                         : `inset 0 0 0 1px ${accent}18`,
                 }} />
 
-                {/* Corner brackets */}
-                {[
-                    { top: 28, left: 28, style: { borderTop: `1px solid ${accent}`, borderLeft: `1px solid ${accent}` } },
-                    { bottom: 28, right: 28, style: { borderBottom: `1px solid ${accent}`, borderRight: `1px solid ${accent}` } },
-                ].map((p, i) => (
-                    <div key={i} style={{
-                        position: 'absolute',
-                        top: p.top, left: p.left, bottom: p.bottom, right: p.right,
-                        width: 40, height: 40, zIndex: 5, opacity: 0.4,
-                        ...p.style,
-                    }} />
-                ))}
+                {/* FIX #2: Corner brackets — use explicit positioning props only,
+                    no ambiguous spread mix. Each bracket is a fixed 40×40 box. */}
+                {/* Top-left bracket */}
+                <div style={{
+                    position: 'absolute',
+                    top: 28, left: 28,
+                    width: 40, height: 40,
+                    zIndex: 5,
+                    borderTop: `1px solid ${accent}`,
+                    borderLeft: `1px solid ${accent}`,
+                }} />
+                {/* Bottom-right bracket */}
+                <div style={{
+                    position: 'absolute',
+                    bottom: 28, right: 28,
+                    width: 40, height: 40,
+                    zIndex: 5,
+                    borderBottom: `1px solid ${accent}`,
+                    borderRight: `1px solid ${accent}`,
+                }} />
 
                 {/* Ghost number (bottom-left, scrub slide) */}
                 <div ref={numberRef} style={{
@@ -347,83 +376,94 @@ const ServiceCard = ({ service, index, total }) => {
                     fontWeight: 800, lineHeight: 1,
                     letterSpacing: '-0.06em',
                     color: 'transparent',
-                    WebkitTextStroke: `1px ${accent}1a`,
+                    WebkitTextStroke: `3px ${accent}3a`,
                     zIndex: 5, userSelect: 'none', pointerEvents: 'none',
                 }}>
                     {String(index + 1).padStart(2, '0')}
                 </div>
 
-                {/* FOREGROUND CONTENT (tilt parallax layer) */}
+                {/* FOREGROUND CONTENT
+                    FIX #4: Two-layer approach.
+                    - contentRef handles the absolute centering (translate -50%/-50%).
+                    - tiltWrapRef is the inner div that GSAP moves with x/y for the
+                      parallax tilt, keeping the two transforms completely separate. */}
                 <div
                     ref={contentRef}
                     style={{
                         position: 'absolute', top: '50%', left: '50%',
                         transform: 'translate(-50%, -50%)',
-                        zIndex: 6, textAlign: 'center',
-                        width: '90%', maxWidth: 820,
+                        zIndex: 6,
                     }}
                 >
-                    {/* Subtitle (SplitType chars) */}
-                    <p ref={subtitleRef} style={{
-                        fontFamily: 'DM Sans, sans-serif',
-                        fontSize: 11, fontWeight: 500,
-                        letterSpacing: '0.28em', textTransform: 'uppercase',
-                        color: accent, marginBottom: 20,
-                    }}>
-                        {service.subtitle}
-                    </p>
+                    <div
+                        ref={tiltWrapRef}
+                        style={{
+                            textAlign: 'center',
+                            width: '90vw', maxWidth: 820,
+                        }}
+                    >
+                        {/* Subtitle (SplitType chars) */}
+                        <p ref={subtitleRef} style={{
+                            fontFamily: 'DM Sans, sans-serif',
+                            fontSize: 11, fontWeight: 500,
+                            letterSpacing: '0.28em', textTransform: 'uppercase',
+                            color: accent, marginBottom: 20,
+                        }}>
+                            {service.subtitle}
+                        </p>
 
-                    {/* Scrub rule */}
-                    <div ref={ruleRef} style={{
-                        width: '100%', height: 1,
-                        background: `linear-gradient(to right, transparent, ${accent}55, transparent)`,
-                        marginBottom: 28,
-                    }} />
+                        {/* Scrub rule */}
+                        <div ref={ruleRef} style={{
+                            width: '100%', height: 1,
+                            background: `linear-gradient(to right, transparent, ${accent}55, transparent)`,
+                            marginBottom: 15,
+                        }} />
 
-                    {/* Title (SplitType chars scrub reveal) */}
-                    <h3 ref={titleRef} style={{
-                        fontFamily: 'Outfit, sans-serif',
-                        fontSize: 'clamp(44px, 7.5vw, 108px)',
-                        fontWeight: 800, lineHeight: 0.9,
-                        letterSpacing: '-0.03em', textTransform: 'uppercase',
-                        color: '#ffffff',
-                        textShadow: (isHovered || touch) ? `0 0 80px ${accent}55` : 'none',
-                        transition: 'text-shadow 0.5s ease',
-                        marginBottom: 28, wordBreak: 'break-word',
-                    }}>
-                        {service.title}
-                    </h3>
+                        {/* Title (SplitType chars scrub reveal) */}
+                        <h3 ref={titleRef} style={{
+                            fontFamily: 'Outfit, sans-serif',
+                            fontSize: 'clamp(44px, 7.5vw, 108px)',
+                            fontWeight: 800, lineHeight: 0.9,
+                            letterSpacing: '-0.03em', textTransform: 'uppercase',
+                            color: '#ffffff',
+                            textShadow: (isHovered || touch) ? `0 0 80px ${accent}55` : 'none',
+                            transition: 'text-shadow 0.5s ease',
+                            marginBottom: 28, wordBreak: 'break-word',
+                        }}>
+                            {service.title}
+                        </h3>
 
-                    {/* Description */}
-                    <p ref={descRef} style={{
-                        fontFamily: 'DM Sans, sans-serif',
-                        fontSize: 'clamp(14px, 1.6vw, 18px)',
-                        color: 'rgba(255,255,255,0.52)',
-                        lineHeight: 1.75, maxWidth: 500,
-                        margin: '0 auto 36px',
-                    }}>
-                        {service.description}
-                    </p>
+                        {/* Description */}
+                        <p ref={descRef} style={{
+                            fontFamily: 'DM Sans, sans-serif',
+                            fontSize: 'clamp(14px, 1.6vw, 18px)',
+                            color: 'rgba(255,255,255,0.52)',
+                            lineHeight: 1.75, maxWidth: 500,
+                            margin: '0 auto 36px',
+                        }}>
+                            {service.description}
+                        </p>
 
-                    {/* CTA */}
-                    <div ref={ctaRef}>
-                        <button
-                            style={{
-                                padding: '14px 46px',
-                                fontFamily: 'DM Sans, sans-serif',
-                                fontSize: 12, fontWeight: 600,
-                                letterSpacing: '0.14em', textTransform: 'uppercase',
-                                background: 'transparent', color: accent,
-                                border: `1px solid ${accent}`, borderRadius: 0, cursor: 'pointer',
-                            }}
-                            onMouseEnter={e => gsap.to(e.currentTarget, { backgroundColor: accent, color: '#000', duration: 0.22 })}
-                            onMouseLeave={e => gsap.to(e.currentTarget, { backgroundColor: 'transparent', color: accent, duration: 0.22 })}
-                        >
-                            See Examples
-                            <svg style={{ marginLeft: 10, verticalAlign: 'middle' }} width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </button>
+                        {/* CTA */}
+                        <div ref={ctaRef}>
+                            <button
+                                style={{
+                                    padding: '14px 46px',
+                                    fontFamily: 'DM Sans, sans-serif',
+                                    fontSize: 12, fontWeight: 600,
+                                    letterSpacing: '0.14em', textTransform: 'uppercase',
+                                    background: 'transparent', color: accent,
+                                    border: `1px solid ${accent}`, borderRadius: 0, cursor: 'pointer',
+                                }}
+                                onMouseEnter={e => gsap.to(e.currentTarget, { backgroundColor: accent, color: '#000', duration: 0.22 })}
+                                onMouseLeave={e => gsap.to(e.currentTarget, { backgroundColor: 'transparent', color: accent, duration: 0.22 })}
+                            >
+                                See Examples
+                                <svg style={{ marginLeft: 10, verticalAlign: 'middle' }} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                                    <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

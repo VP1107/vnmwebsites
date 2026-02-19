@@ -1,180 +1,180 @@
 import { useRef, useEffect } from 'react';
-import { gsap, ScrollTrigger } from '../../gsap-config';
-import SplitType from 'split-type';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const lines = [
     { text: 'First-year students.', accent: false },
-    { text: 'Modern tools.',        accent: false },
-    { text: 'Fresh ideas.',         accent: true  },
-    { text: 'Zero corporate BS.',   accent: false },
+    { text: 'Modern tools.', accent: false },
+    { text: 'Fresh ideas.', accent: true },
+    { text: 'Zero corporate BS.', accent: false },
 ];
 
 const DesignVideo = () => {
     const containerRef = useRef(null);
-    const bgLayerRef   = useRef(null);
-    const videoRef     = useRef(null);
-    const gridRef      = useRef(null);
-    const overlayRef   = useRef(null);
-    const progressRef  = useRef(null);
-    const lineRefs     = useRef([]);
-    const splitRefs    = useRef([]);
+    const bgLayerRef = useRef(null);
+    const videoRef = useRef(null);
+    const gridRef = useRef(null);
+    const overlayRef = useRef(null);
+    const progressRef = useRef(null);
+    const lineRefs = useRef([]);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
+            // 1. Initial State: Hide all lines immediately
+            gsap.set(lineRefs.current, { opacity: 0, y: 40, filter: 'blur(10px)' });
 
-            /* ── PIN ── */
-            ScrollTrigger.create({
-                trigger: containerRef.current,
-                start: 'top top',
-                end: '+=400%',
-                pin: true,
-                pinSpacing: true,
-                anticipatePin: 1,
-                invalidateOnRefresh: true,
-            });
-
-            /* ── PROGRESS BAR ── */
-            gsap.fromTo(progressRef.current,
-                { scaleX: 0 },
-                {
-                    scaleX: 1, ease: 'none', transformOrigin: 'left center',
-                    scrollTrigger: {
-                        trigger: containerRef.current,
-                        start: 'top top', end: '+=400%',
-                        scrub: 0, invalidateOnRefresh: true,
-                    }
-                }
-            );
-
-            /* ── VIDEO parallax zoom ── */
-            gsap.fromTo(bgLayerRef.current,
-                { scale: 1, yPercent: 0 },
-                {
-                    scale: 1.28, yPercent: -8, ease: 'none',
-                    scrollTrigger: {
-                        trigger: containerRef.current,
-                        start: 'top top', end: '+=400%',
-                        scrub: 2.5, invalidateOnRefresh: true,
-                    }
-                }
-            );
-
-            /* ── GRID drift ── */
-            gsap.fromTo(gridRef.current,
-                { yPercent: 25, opacity: 0 },
-                {
-                    yPercent: -25, opacity: 0.65, ease: 'none',
-                    scrollTrigger: {
-                        trigger: containerRef.current,
-                        start: 'top top', end: '+=400%',
-                        scrub: 3, invalidateOnRefresh: true,
-                    }
-                }
-            );
-
-            /* ── OVERLAY ── */
-            gsap.to(overlayRef.current, {
-                opacity: 0.75, ease: 'none',
+            // 2. Main Timeline: Pins the section and orchestrates the lines
+            const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: containerRef.current,
-                    start: 'top top', end: '+=200%',
-                    scrub: 1, invalidateOnRefresh: true,
+                    start: 'top top',
+                    end: '+=300%',
+                    pin: true,
+                    pinSpacing: true,
+                    scrub: 1, // Smooth scrubbing for text
+                    anticipatePin: 1,
+                    invalidateOnRefresh: true,
                 }
             });
 
-            /* ── SEQUENTIAL LINE REVEALS ── */
-            const total       = lines.length;
-            const segmentSize = 1 / total;
-            const pinVh       = 400;
-
+            // 3. Lines Sequence
+            // We divide the timeline into equal slots for each line.
+            // Total lines = 4. 
+            // For each line: Fade In -> Stay -> Fade Out.
             lines.forEach((_, i) => {
                 const el = lineRefs.current[i];
                 if (!el) return;
 
-                splitRefs.current[i] = new SplitType(el, { types: 'words,chars' });
+                // Determine sequencing
+                // We want overlap? No, sequential.
+                // We can just chain them.
 
-                splitRefs.current[i].words.forEach(w => {
-                    w.style.display       = 'inline-block';
-                    w.style.whiteSpace    = 'nowrap';
-                    w.style.overflow      = 'clip';
-                    w.style.verticalAlign = 'bottom';
+                // In
+                tl.to(el, {
+                    opacity: 1,
+                    y: 0,
+                    filter: 'blur(0px)',
+                    duration: 1,
+                    ease: 'power2.out'
                 });
 
-                splitRefs.current[i].chars.forEach(c => {
-                    c.style.display       = 'inline-block';
-                    c.style.verticalAlign = 'bottom';
-                    c.style.willChange    = 'transform';
+                // Stay visible for a bit
+                tl.to(el, { duration: 1 });
+
+                // Out
+                tl.to(el, {
+                    opacity: 0,
+                    y: -40,
+                    filter: 'blur(10px)',
+                    duration: 1,
+                    ease: 'power2.in'
                 });
-
-                const chars = splitRefs.current[i].chars;
-
-                // FIX: explicitly set all chars invisible BEFORE any ScrollTrigger
-                // fires. This is the correct way — not CSS opacity:0 on the parent
-                // (which breaks the stacked grid layout) but gsap.set on chars directly.
-                gsap.set(chars, { y: '120%', opacity: 0 });
-
-                const lineStart = i * segmentSize;
-                const inEnd     = lineStart + segmentSize * 0.35;
-                const outStart  = lineStart + segmentSize * 0.80;
-                const lineEnd   = lineStart + segmentSize;
-
-                const toOffset  = p => `top+=${p * pinVh}% top`;
-
-                /* IN */
-                gsap.fromTo(chars,
-                    { y: '120%', opacity: 0, filter: 'blur(8px)' },
-                    {
-                        y: '0%', opacity: 1, filter: 'blur(0px)',
-                        stagger: 0.012, ease: 'none',
-                        scrollTrigger: {
-                            trigger: containerRef.current,
-                            start: toOffset(lineStart),
-                            end:   toOffset(inEnd),
-                            scrub: 0.8, invalidateOnRefresh: true,
-                        }
-                    }
-                );
-
-                /* OUT */
-                gsap.fromTo(chars,
-                    { y: '0%', opacity: 1, filter: 'blur(0px)' },
-                    {
-                        y: '-110%', opacity: 0, filter: 'blur(6px)',
-                        stagger: 0.008, ease: 'none',
-                        scrollTrigger: {
-                            trigger: containerRef.current,
-                            start: toOffset(outStart),
-                            end:   toOffset(lineEnd),
-                            scrub: 0.8, invalidateOnRefresh: true,
-                        }
-                    }
-                );
             });
 
-        }, containerRef);
+            // 4. Background Animations (Independent Parallax)
+            // These run in parallel to the pinned container scrub.
 
-        return () => {
-            ctx.revert();
-            splitRefs.current.forEach(s => s?.revert());
-        };
+            // Video BG Zoom
+            gsap.fromTo(bgLayerRef.current,
+                { scale: 1, yPercent: 0 },
+                {
+                    scale: 1.18,
+                    yPercent: -8,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top top',
+                        end: '+=400%',
+                        scrub: 2.5, // Different smoothness for depth feel
+                        invalidateOnRefresh: true,
+                    }
+                }
+            );
+
+            // Grid Drift
+            gsap.fromTo(gridRef.current,
+                { yPercent: 25, opacity: 0 },
+                {
+                    yPercent: -25,
+                    opacity: 0.65,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top top',
+                        end: '+=400%',
+                        scrub: 3,
+                        invalidateOnRefresh: true,
+                    }
+                }
+            );
+
+            // Overlay Dimming
+            gsap.to(overlayRef.current, {
+                opacity: 0.75,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: containerRef.current,
+                    start: 'top top',
+                    end: '+=200%', // Fades in faster
+                    scrub: 1,
+                    invalidateOnRefresh: true,
+                }
+            });
+
+            // Progress Bar
+            gsap.to(progressRef.current, {
+                scaleX: 1,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger: containerRef.current,
+                    start: 'top top',
+                    end: '+=400%',
+                    scrub: 0,
+                    invalidateOnRefresh: true,
+                }
+            });
+
+        }, containerRef); // Scope to container
+
+        return () => ctx.revert();
     }, []);
 
     return (
         <div ref={containerRef} className="dv-wrap">
+
+            {/* SCRUB PROGRESS BAR */}
             <div className="dv-progress-track">
                 <div ref={progressRef} className="dv-progress-bar" />
             </div>
+
+            {/* LAYER 1 – Video bg (slowest) */}
             <div ref={bgLayerRef} className="dv-bg">
-                <video ref={videoRef} autoPlay loop muted playsInline preload="none" className="dv-video">
+                <video
+                    ref={videoRef}
+                    autoPlay loop muted playsInline preload="none"
+                    className="dv-video"
+                >
                     <source src={`${import.meta.env.BASE_URL}videos/design-process.mp4`} type="video/mp4" />
                 </video>
             </div>
+
+            {/* LAYER 2 – Vignette */}
             <div ref={overlayRef} className="dv-overlay" />
+
+            {/* LAYER 3 – Grid (medium parallax) */}
             <div ref={gridRef} className="dv-grid" />
+
+            {/* Edge fades */}
             <div className="dv-fade dv-fade--top" />
             <div className="dv-fade dv-fade--bottom" />
+
+            {/* Corner brackets */}
             <div className="dv-corner dv-corner--tl" />
             <div className="dv-corner dv-corner--br" />
+
+            {/* MANIFESTO LINES — stacked at center, each revealed sequentially */}
             <div className="dv-lines">
                 {lines.map((line, i) => (
                     <h2
@@ -186,6 +186,8 @@ const DesignVideo = () => {
                     </h2>
                 ))}
             </div>
+
+            {/* Section index */}
             <div className="dv-index">03</div>
         </div>
     );
