@@ -1,9 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger } from '../../gsap-config';
 import './TechStack.css';
-
-gsap.registerPlugin(ScrollTrigger);
 
 import TECH_ITEMS from '../../data/techStack.json';
 
@@ -86,7 +83,7 @@ const TechStack = () => {
   }, [isVisible]);
 
   /* ── Magnetic chip handlers ─────────────────────────────────── */
-  const handleMouseMove = (e, color) => {
+  const handleMouseMove = (e) => {
     const chip = e.currentTarget;
     const r = chip.getBoundingClientRect();
     const dx = (e.clientX - r.left - r.width / 2) / (r.width / 2);
@@ -100,7 +97,7 @@ const TechStack = () => {
     chip.style.borderColor = `${color}70`;
     chip.style.background = `${color}14`;
     chip.style.boxShadow = `0 0 28px ${color}25, inset 0 0 14px ${color}0c`;
-    
+
     const appCursorRing = document.querySelector('.custom-cursor-ring');
     if (appCursorRing) {
       gsap.to(appCursorRing, {

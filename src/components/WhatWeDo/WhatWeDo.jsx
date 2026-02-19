@@ -1,12 +1,10 @@
 import { useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import {ScrollTrigger } from '../../gsap-config';
 import SectionIntro from './SectionIntro';
 import ServiceCard from './ServiceCard';
 import PricingTeaser from './PricingTeaser';
 import './WhatWeDo.css';
 
-gsap.registerPlugin(ScrollTrigger);
 
 import servicesData from '../../data/services.json';
 
@@ -19,24 +17,16 @@ const WhatWeDo = () => {
     const sectionRef = useRef(null);
 
     useEffect(() => {
-        // BUG FIX #20: 200ms may not be enough for all ServiceCard ScrollTriggers
-        // to register, especially on slower devices or when videos affect layout.
-        // Use ScrollTrigger.refresh() inside a requestAnimationFrame to ensure
-        // the browser has completed a full paint cycle before recalculating.
-        // Also call it again after fonts/images load if needed.
+        // Wait a full paint cycle so all ServiceCard pins register correctly
         const raf = requestAnimationFrame(() => {
             ScrollTrigger.refresh();
         });
 
-        // BUG FIX #21: On window resize, pin positions become stale.
-        // ScrollTrigger handles most of this internally, but with multiple
-        // pins it's safer to explicitly refresh on resize (debounced).
+        // Debounced resize refresh — pins become stale after resize
         let resizeTimer;
         const handleResize = () => {
             clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => {
-                ScrollTrigger.refresh();
-            }, 200);
+            resizeTimer = setTimeout(() => ScrollTrigger.refresh(), 200);
         };
         window.addEventListener('resize', handleResize);
 
@@ -50,13 +40,8 @@ const WhatWeDo = () => {
     return (
         <section
             ref={sectionRef}
-            className="what-we-do-section"
+            className="wwd-section"
             id="what-we-do-section"
-            style={{
-                background: '#000',
-                position: 'relative',
-                paddingTop: '100px'
-            }}
         >
             <SectionIntro />
 
@@ -65,6 +50,7 @@ const WhatWeDo = () => {
                     key={service.id}
                     service={service}
                     index={index}
+                    total={services.length}
                 />
             ))}
 

@@ -1,7 +1,7 @@
 import { useRef, useState, useCallback } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './ContactForm.css';
+import { gsap, ScrollTrigger } from '../../gsap-config';
+
 
 // ── Field component — CSS handles label float, no GSAP on labels ──────────────
 const Field = ({ id, label, type = 'text', rows, required, value, onChange }) => {
@@ -46,11 +46,11 @@ const Field = ({ id, label, type = 'text', rows, required, value, onChange }) =>
 
 // ── Main component ────────────────────────────────────────────────────────────
 const ContactForm = () => {
-    const sectionRef   = useRef(null);
-    const leftRef      = useRef(null);
-    const formRef      = useRef(null);
+    const sectionRef = useRef(null);
+
+    const formRef = useRef(null);
     const submitBtnRef = useRef(null);
-    const successRef   = useRef(null);
+    const successRef = useRef(null);
 
     const [fields, setFields] = useState({ name: '', email: '', message: '' });
     const [sending, setSending] = useState(false);
@@ -63,10 +63,10 @@ const ContactForm = () => {
         if (!node) return;
         sectionRef.current = node;
 
-        const leftChildren  = node.querySelectorAll('.contact-eyebrow, .contact-headline, .contact-descriptor, .contact-direct');
+        const leftChildren = node.querySelectorAll('.contact-eyebrow, .contact-headline, .contact-descriptor, .contact-direct');
         const rightChildren = node.querySelectorAll('.field-wrap, .submit-row');
 
-        gsap.set(leftChildren,  { opacity: 0, y: 40 });
+        gsap.set(leftChildren, { opacity: 0, y: 40 });
         gsap.set(rightChildren, { opacity: 0, y: 30 });
 
         ScrollTrigger.create({
@@ -105,8 +105,8 @@ const ContactForm = () => {
         if (sending || sent) return;
         setSending(true);
 
-        const btn    = submitBtnRef.current;
-        const form   = formRef.current;
+        const btn = submitBtnRef.current;
+        const form = formRef.current;
         const success = successRef.current;
 
         // 1. Button pulse
@@ -191,7 +191,7 @@ const ContactForm = () => {
             <div className="contact-inner">
 
                 {/* ── LEFT ── */}
-                <div className="contact-left" ref={leftRef}>
+                <div className="contact-left">
                     <span className="contact-eyebrow">Start a project</span>
 
                     <h2 className="contact-headline" id="contact-heading">
@@ -266,7 +266,7 @@ const ContactForm = () => {
                                 {!sending && (
                                     <span className="submit-arrow" aria-hidden="true">
                                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                            <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                            <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     </span>
                                 )}

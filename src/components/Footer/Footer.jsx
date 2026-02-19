@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
 import Logo from '../UI/Logo';
 import './Footer.css';
+import { gsap} from '../../gsap-config';
 
 const Footer = () => {
     const footerRef = useRef(null);

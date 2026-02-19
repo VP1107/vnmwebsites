@@ -1,7 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
+import { gsap} from '../../gsap-config';
 const PhotoGrid = () => {
     const gridRef = useRef(null);
     const photosRef = useRef([]);

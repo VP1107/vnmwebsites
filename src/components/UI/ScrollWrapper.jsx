@@ -1,8 +1,7 @@
 // ScrollWrapper.jsx (FIXED)
 import { useEffect, useRef } from 'react';
 import Lenis from 'lenis';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger } from '../../gsap-config';
 
 const ScrollWrapper = ({ children }) => {
     const lenisRef = useRef(null);

@@ -1,171 +1,192 @@
 import { useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger } from '../../gsap-config';
+import SplitType from 'split-type';
 
-gsap.registerPlugin(ScrollTrigger);
+const lines = [
+    { text: 'First-year students.', accent: false },
+    { text: 'Modern tools.',        accent: false },
+    { text: 'Fresh ideas.',         accent: true  },
+    { text: 'Zero corporate BS.',   accent: false },
+];
 
 const DesignVideo = () => {
     const containerRef = useRef(null);
-    const videoRef = useRef(null);
-    const textLinesRef = useRef([]);
-
-    const textLines = [
-        "First-year students.",
-        "Modern tools.",
-        "Fresh ideas.",
-        "Zero corporate BS."
-    ];
+    const bgLayerRef   = useRef(null);
+    const videoRef     = useRef(null);
+    const gridRef      = useRef(null);
+    const overlayRef   = useRef(null);
+    const progressRef  = useRef(null);
+    const lineRefs     = useRef([]);
+    const splitRefs    = useRef([]);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            // Master timeline for the entire sequence
-            const tl = gsap.timeline({
+
+            /* ── PIN ── */
+            ScrollTrigger.create({
+                trigger: containerRef.current,
+                start: 'top top',
+                end: '+=400%',
+                pin: true,
+                pinSpacing: true,
+                anticipatePin: 1,
+                invalidateOnRefresh: true,
+            });
+
+            /* ── PROGRESS BAR ── */
+            gsap.fromTo(progressRef.current,
+                { scaleX: 0 },
+                {
+                    scaleX: 1, ease: 'none', transformOrigin: 'left center',
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top top', end: '+=400%',
+                        scrub: 0, invalidateOnRefresh: true,
+                    }
+                }
+            );
+
+            /* ── VIDEO parallax zoom ── */
+            gsap.fromTo(bgLayerRef.current,
+                { scale: 1, yPercent: 0 },
+                {
+                    scale: 1.28, yPercent: -8, ease: 'none',
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top top', end: '+=400%',
+                        scrub: 2.5, invalidateOnRefresh: true,
+                    }
+                }
+            );
+
+            /* ── GRID drift ── */
+            gsap.fromTo(gridRef.current,
+                { yPercent: 25, opacity: 0 },
+                {
+                    yPercent: -25, opacity: 0.65, ease: 'none',
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top top', end: '+=400%',
+                        scrub: 3, invalidateOnRefresh: true,
+                    }
+                }
+            );
+
+            /* ── OVERLAY ── */
+            gsap.to(overlayRef.current, {
+                opacity: 0.75, ease: 'none',
                 scrollTrigger: {
                     trigger: containerRef.current,
-                    start: 'top top',
-                    end: '+=400%',
-                    scrub: 1,
-                    pin: true,
-                    pinSpacing: true
+                    start: 'top top', end: '+=200%',
+                    scrub: 1, invalidateOnRefresh: true,
                 }
             });
 
-            // Video zoom effect
-            tl.to(videoRef.current, {
-                scale: 1.15,
-                ease: 'none'
-            }, 0);
+            /* ── SEQUENTIAL LINE REVEALS ── */
+            const total       = lines.length;
+            const segmentSize = 1 / total;
+            const pinVh       = 400;
 
-            // Sequential text animations
-            textLinesRef.current.forEach((line, index) => {
-                if (!line) return;
+            lines.forEach((_, i) => {
+                const el = lineRefs.current[i];
+                if (!el) return;
 
-                const fadeInStart = index * 2.5;
-                const holdStart = fadeInStart + 1;
-                const fadeOutStart = holdStart + 0.5;
+                splitRefs.current[i] = new SplitType(el, { types: 'words,chars' });
 
-                // 1. Fade In
-                tl.fromTo(line,
+                splitRefs.current[i].words.forEach(w => {
+                    w.style.display       = 'inline-block';
+                    w.style.whiteSpace    = 'nowrap';
+                    w.style.overflow      = 'clip';
+                    w.style.verticalAlign = 'bottom';
+                });
+
+                splitRefs.current[i].chars.forEach(c => {
+                    c.style.display       = 'inline-block';
+                    c.style.verticalAlign = 'bottom';
+                    c.style.willChange    = 'transform';
+                });
+
+                const chars = splitRefs.current[i].chars;
+
+                // FIX: explicitly set all chars invisible BEFORE any ScrollTrigger
+                // fires. This is the correct way — not CSS opacity:0 on the parent
+                // (which breaks the stacked grid layout) but gsap.set on chars directly.
+                gsap.set(chars, { y: '120%', opacity: 0 });
+
+                const lineStart = i * segmentSize;
+                const inEnd     = lineStart + segmentSize * 0.35;
+                const outStart  = lineStart + segmentSize * 0.80;
+                const lineEnd   = lineStart + segmentSize;
+
+                const toOffset  = p => `top+=${p * pinVh}% top`;
+
+                /* IN */
+                gsap.fromTo(chars,
+                    { y: '120%', opacity: 0, filter: 'blur(8px)' },
                     {
-                        opacity: 0,
-                        y: 80,
-                        scale: 0.9,
-                        filter: 'blur(10px)'
-                    },
-                    {
-                        opacity: 1,
-                        y: 0,
-                        scale: 1,
-                        filter: 'blur(0px)',
-                        duration: 1,
-                        ease: 'power3.out'
-                    },
-                    fadeInStart
+                        y: '0%', opacity: 1, filter: 'blur(0px)',
+                        stagger: 0.012, ease: 'none',
+                        scrollTrigger: {
+                            trigger: containerRef.current,
+                            start: toOffset(lineStart),
+                            end:   toOffset(inEnd),
+                            scrub: 0.8, invalidateOnRefresh: true,
+                        }
+                    }
                 );
 
-                // 2. Hold
-                tl.to(line, {
-                    opacity: 1,
-                    duration: 0.5
-                }, holdStart);
-
-                // 3. Fade Out
-                tl.to(line, {
-                    opacity: 0,
-                    y: -80,
-                    scale: 1.1,
-                    filter: 'blur(10px)',
-                    duration: 0.8,
-                    ease: 'power3.in'
-                }, fadeOutStart);
+                /* OUT */
+                gsap.fromTo(chars,
+                    { y: '0%', opacity: 1, filter: 'blur(0px)' },
+                    {
+                        y: '-110%', opacity: 0, filter: 'blur(6px)',
+                        stagger: 0.008, ease: 'none',
+                        scrollTrigger: {
+                            trigger: containerRef.current,
+                            start: toOffset(outStart),
+                            end:   toOffset(lineEnd),
+                            scrub: 0.8, invalidateOnRefresh: true,
+                        }
+                    }
+                );
             });
 
         }, containerRef);
 
-        return () => ctx.revert();
+        return () => {
+            ctx.revert();
+            splitRefs.current.forEach(s => s?.revert());
+        };
     }, []);
 
     return (
-        <div
-            ref={containerRef}
-            style={{
-                height: '100vh',
-                position: 'relative',
-                overflow: 'hidden',
-                background: '#000'
-            }}
-        >
-            {/* Background Video using PUBLIC path */}
-            <video
-                ref={videoRef}
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="none"
-                style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    minWidth: '100%',
-                    minHeight: '100%',
-                    width: 'auto',
-                    height: 'auto',
-                    transform: 'translate(-50%, -50%)',
-                    objectFit: 'cover',
-                    zIndex: 1,
-                    filter: 'brightness(0.6)'
-                }}
-            >
-                <source src={`${import.meta.env.BASE_URL}videos/design-process.mp4`} type="video/mp4" />
-            </video>
-
-            {/* Gradient Overlay for legibility */}
-            <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6))',
-                zIndex: 1,
-                pointerEvents: 'none'
-            }} />
-
-            {/* Scrolling Text Lines Container */}
-            <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 2,
-                width: '90%',
-                maxWidth: '1200px',
-                pointerEvents: 'none',
-                display: 'grid',
-                placeItems: 'center'
-            }}>
-                {textLines.map((text, index) => (
+        <div ref={containerRef} className="dv-wrap">
+            <div className="dv-progress-track">
+                <div ref={progressRef} className="dv-progress-bar" />
+            </div>
+            <div ref={bgLayerRef} className="dv-bg">
+                <video ref={videoRef} autoPlay loop muted playsInline preload="none" className="dv-video">
+                    <source src={`${import.meta.env.BASE_URL}videos/design-process.mp4`} type="video/mp4" />
+                </video>
+            </div>
+            <div ref={overlayRef} className="dv-overlay" />
+            <div ref={gridRef} className="dv-grid" />
+            <div className="dv-fade dv-fade--top" />
+            <div className="dv-fade dv-fade--bottom" />
+            <div className="dv-corner dv-corner--tl" />
+            <div className="dv-corner dv-corner--br" />
+            <div className="dv-lines">
+                {lines.map((line, i) => (
                     <h2
-                        key={index}
-                        ref={el => textLinesRef.current[index] = el}
-                        style={{
-                            gridArea: '1 / 1',
-                            fontSize: 'clamp(40px, 7vw, 100px)',
-                            fontWeight: 900,
-                            color: '#ffffff',
-                            textAlign: 'center',
-                            opacity: 0,
-                            textShadow: '0 4px 40px rgba(0, 0, 0, 0.9)',
-                            fontFamily: '"Syne", sans-serif',
-                            margin: 0,
-                            willChange: 'opacity, transform, filter'
-                        }}
+                        key={i}
+                        ref={el => lineRefs.current[i] = el}
+                        className={`dv-line${line.accent ? ' dv-line--accent' : ''}`}
                     >
-                        {text}
+                        {line.text}
                     </h2>
                 ))}
             </div>
+            <div className="dv-index">03</div>
         </div>
     );
 };

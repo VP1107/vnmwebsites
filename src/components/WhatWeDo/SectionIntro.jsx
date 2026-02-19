@@ -1,153 +1,117 @@
 import { useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger } from '../../gsap-config';
 import SplitType from 'split-type';
 
-gsap.registerPlugin(ScrollTrigger);
-
 const SectionIntro = () => {
-    const titleRef = useRef(null);
-    const subtitleRef = useRef(null);
-    // BUG FIX #1: Store the SplitType instance so we can revert it on cleanup,
-    // preventing orphaned <span> elements if the component re-mounts.
-    const splitInstanceRef = useRef(null);
+  const containerRef = useRef(null);
+  const titleRef = useRef(null);
+  const subtitleRef = useRef(null);
+  const lineRef = useRef(null);
+  const labelRef = useRef(null);
+  const splitRef = useRef(null);
 
-    useEffect(() => {
-        // BUG FIX #2: gsap.context() needs a scope element passed in.
-        // Without it, ctx.revert() can fail to clean up tweens created inside
-        // this component when other components share the same gsap context.
-        const ctx = gsap.context(() => {
-            // BUG FIX #3: SplitType must be called INSIDE the gsap.context callback
-            // (or at minimum after the DOM is confirmed ready), but crucially the
-            // instance must be stored so we can call .revert() on cleanup — otherwise
-            // the DOM is left with dangling <span> wrappers after unmount/HMR.
-            splitInstanceRef.current = new SplitType(titleRef.current, { types: 'chars' });
-            const chars = splitInstanceRef.current.chars;
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.from(labelRef.current, {
+        opacity: 0, x: -24, duration: 0.8, ease: 'power3.out',
+        scrollTrigger: { trigger: containerRef.current, start: 'top 82%' }
+      });
 
-            // BUG FIX #4: The scroll-in animation used `scrub: 1` (scroll-linked),
-            // BUT the shimmer animation below immediately overrides the `color` and
-            // `opacity` properties on the same elements — causing a fight between
-            // the two tweens. The scroll-in should only animate layout properties
-            // (y, rotateX) and let opacity be driven by the scroll scrub separately,
-            // OR the shimmer should start only after the scroll-in completes.
-            // Solution: separate opacity into its own scroll trigger, and start the
-            // shimmer only after the reveal is done via an onComplete callback.
-            gsap.fromTo(chars,
-                { y: 100, rotateX: -90, transformOrigin: 'top center', opacity: 0 },
-                {
-                    y: 0,
-                    rotateX: 0,
-                    opacity: 1,
-                    stagger: 0.03,
-                    duration: 1,
-                    ease: 'back.out(1.5)',
-                    scrollTrigger: {
-                        trigger: titleRef.current,
-                        start: 'top 80%',
-                        end: 'top 30%',
-                        scrub: 1,
-                        // BUG FIX #5: With scrub animations, onComplete fires when
-                        // the scrub tween finishes (i.e. when scrolled to end position),
-                        // not when the animation visually completes. That's intentional
-                        // here — we start the shimmer only once fully revealed.
-                        onEnterBack: () => {
-                            // Stop shimmer if user scrolls back up through the trigger
-                            gsap.killTweensOf(chars, 'color,textShadow');
-                        }
-                    },
-                    // BUG FIX #6: Start shimmer after scroll reveal is fully complete
-                    onComplete: () => startShimmer(chars)
-                }
-            );
+      gsap.from(lineRef.current, {
+        scaleX: 0, transformOrigin: 'left center', duration: 1.1, ease: 'power3.out', delay: 0.1,
+        scrollTrigger: { trigger: containerRef.current, start: 'top 82%' }
+      });
 
-            // Subtitle
-            gsap.fromTo(subtitleRef.current,
-                { opacity: 0, y: 50 },
-                {
-                    opacity: 1,
-                    y: 0,
-                    duration: 1,
-                    ease: 'power3.out',
-                    scrollTrigger: {
-                        trigger: subtitleRef.current,
-                        start: 'top 85%',
-                        toggleActions: 'play none none none'
-                    }
-                }
-            );
+      splitRef.current = new SplitType(titleRef.current, { types: 'words,chars' });
+      const chars = splitRef.current.chars;
+      splitRef.current.words.forEach(w => {
+        w.style.display       = 'inline-block';
+        w.style.whiteSpace    = 'nowrap';
+        w.style.overflow      = 'hidden';
+        w.style.verticalAlign = 'bottom';
+      });
+      chars.forEach(c => {
+        c.style.display       = 'inline-block';
+        c.style.verticalAlign = 'bottom';
+      });
 
-        }, titleRef); // BUG FIX #2 cont: pass scope ref
+      gsap.from(chars, {
+        y: 90, opacity: 0, rotateX: -70,
+        transformOrigin: 'top center',
+        stagger: 0.022, duration: 0.85, ease: 'back.out(1.8)', delay: 0.2,
+        scrollTrigger: { trigger: containerRef.current, start: 'top 80%', toggleActions: 'play none none none' }
+      });
 
-        return () => {
-            ctx.revert();
-            // BUG FIX #3 cont: revert SplitType to restore original DOM
-            splitInstanceRef.current?.revert();
-        };
-    }, []);
+      gsap.from(subtitleRef.current, {
+        opacity: 0, y: 30, duration: 0.9, ease: 'power3.out', delay: 0.55,
+        scrollTrigger: { trigger: containerRef.current, start: 'top 80%', toggleActions: 'play none none none' }
+      });
 
-    // BUG FIX #7: Extracted shimmer into a standalone function so it can be
-    // called conditionally (only after reveal), and killed safely on cleanup.
-    const startShimmer = (chars) => {
-        gsap.to(chars, {
-            color: '#38bdf8',
-            textShadow: '0 0 20px #38bdf8',
-            duration: 0.3,
-            stagger: {
-                each: 0.05,
-                repeat: -1,
-                yoyo: true
-            }
-        });
+    }, containerRef);
+
+    return () => {
+      ctx.revert();
+      splitRef.current?.revert();
     };
+  }, []);
 
-    return (
-        <div style={{
-            minHeight: '60vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0 5%',
-            textAlign: 'center'
-        }}>
-            <h2
-                ref={titleRef}
-                style={{
-                    fontSize: 'clamp(40px, 7vw, 100px)',
-                    fontWeight: 900,
-                    color: '#ffffff',
-                    marginBottom: '30px',
-                    fontFamily: '"Syne", sans-serif',
-                    letterSpacing: '0.02em',
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word'
-                }}
-            >
-                WHAT WE BUILD
-            </h2>
+  return (
+    <div ref={containerRef} style={{
+      minHeight: '60vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '100px 5% 60px',
+      textAlign: 'center',
+      position: 'relative',
+    }}>
+      {/* Label + line */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 24, width: '100%', maxWidth: 700 }}>
+        <span ref={labelRef} style={{
+          fontFamily: 'DM Sans, sans-serif',
+          fontSize: 11,
+          fontWeight: 500,
+          letterSpacing: '0.28em',
+          color: '#38bdf8',
+          textTransform: 'uppercase',
+          whiteSpace: 'nowrap',
+        }}>Our Services</span>
+        <div ref={lineRef} style={{
+          flex: 1, height: 1,
+          background: 'linear-gradient(to right, #38bdf8, transparent)',
+        }} />
+      </div>
 
-            <p
-                ref={subtitleRef}
-                style={{
-                    fontSize: 'clamp(18px, 2.5vw, 28px)',
-                    color: '#a0a0a0',
-                    maxWidth: '600px',
-                    lineHeight: 1.6,
-                    fontFamily: '"Inter", sans-serif'
-                }}
-            >
-                Fast, beautiful, mobile-first websites that help your business grow
-            </p>
+      <h2 ref={titleRef} style={{
+        fontFamily: 'Outfit, sans-serif',
+        fontSize: 'clamp(52px, 9vw, 120px)',
+        fontWeight: 800,
+        lineHeight: 0.95,
+        letterSpacing: '-0.03em',
+        textTransform: 'uppercase',
+        color: '#ffffff',
+        marginBottom: 32,
+        perspective: '600px',
+      }}>
+        What We{' '}
+        <span style={{
+          color: 'transparent',
+          WebkitTextStroke: '2px #38bdf8',
+        }}>Build</span>
+      </h2>
 
-            <div style={{
-                width: '100px',
-                height: '3px',
-                background: 'linear-gradient(90deg, #38bdf8, #00d4ff, #0ea5e9)',
-                marginTop: '30px',
-                borderRadius: '10px'
-            }} />
-        </div>
-    );
+      <p ref={subtitleRef} style={{
+        fontFamily: 'DM Sans, sans-serif',
+        fontSize: 'clamp(16px, 2vw, 20px)',
+        color: 'rgba(255,255,255,0.5)',
+        maxWidth: 520,
+        lineHeight: 1.75,
+      }}>
+        Fast, beautiful, mobile-first websites that help your business grow
+      </p>
+    </div>
+  );
 };
 
 export default SectionIntro;

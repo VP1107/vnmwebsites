@@ -1,10 +1,8 @@
 import { useRef, useEffect, useState } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './Hero.css';
 import HeroContent from './HeroContent';
+import { gsap, ScrollTrigger } from '../../gsap-config';
 
-gsap.registerPlugin(ScrollTrigger);
 
 // ── Particle system ───────────────────────────────────────────────────────────
 function initParticles(canvas) {
@@ -155,7 +153,7 @@ function initLightStreaks(canvas) {
                 ctx.globalAlpha = Math.max(0, Math.min(1, currentAlpha)); // Ensure alpha is 0-1
                 ctx.fillStyle = grad;
                 ctx.fillRect(startX, s.y, s.length, s.width);
-            } catch (e) {
+            } catch {
                 // Ignore gradient errors to prevent crash
             }
         });
@@ -197,8 +195,8 @@ const Hero = ({ startAnimation = false }) => {
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
-        if (startAnimation) setIsLoaded(true);
-    }, [startAnimation]);
+        if (startAnimation && !isLoaded) setIsLoaded(true);
+    }, [startAnimation, isLoaded]);
 
     // Particle canvas
     useEffect(() => {

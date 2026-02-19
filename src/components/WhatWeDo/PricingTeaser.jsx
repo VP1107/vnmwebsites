@@ -1,226 +1,290 @@
 import { useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger } from '../../gsap-config';
+import SplitType from 'split-type';
 
-gsap.registerPlugin(ScrollTrigger);
+
+const perks = ['No Hidden Fees', 'Fast Delivery', '30 Days Support'];
 
 const PricingTeaser = () => {
     const containerRef = useRef(null);
-    const priceRef = useRef(null);
+    const bgGlowRef = useRef(null);  // parallax glow layer
+    const gridRef = useRef(null);  // parallax grid layer
+    const labelRef = useRef(null);
+    const lineRef = useRef(null);
+    const headingRef = useRef(null);  // "Starting At" — SplitType
+    const priceRef = useRef(null);  // animated counter
+    const subtitleRef = useRef(null);
     const ctaRef = useRef(null);
+    const perksRef = useRef(null);
+    const splitHeading = useRef(null);
 
     useEffect(() => {
-        // BUG FIX #16: The animated counter uses `innerHTML` as the tween target
-        // property. GSAP's `snap` only works on numeric values, but the `onUpdate`
-        // callback immediately overwrites innerHTML with a formatted string like
-        // "₹8,000". On the next tick GSAP tries to read innerHTML as a number,
-        // gets NaN, and the animation breaks or produces "₹NaN".
-        //
-        // The original code tries to parse innerHTML back with Math.round(), but
-        // `innerHTML` is already "₹8,000" (a string with commas and a ₹ symbol),
-        // so Math.round("₹8,000") = NaN.
-        //
-        // FIX: Use a plain JS object as the tween target instead of the DOM node.
-        // Animate a `value` property on the object and update the DOM in onUpdate.
-
         const counter = { value: 0 };
 
         const ctx = gsap.context(() => {
-            gsap.fromTo(
-                counter,        // ← tween a plain object, not the DOM node
-                { value: 0 },
+
+            /* 1 ── PARALLAX: bg glow drifts upward as section enters */
+            gsap.fromTo(bgGlowRef.current,
+                { yPercent: 30, scale: 0.8 },
                 {
-                    value: 8000,
-                    duration: 2,
-                    ease: 'power2.out',
-                    snap: { value: 100 }, // snap the numeric value, not innerHTML
+                    yPercent: -20, scale: 1.15, ease: 'none',
                     scrollTrigger: {
                         trigger: containerRef.current,
-                        start: 'top 70%',
-                        toggleActions: 'play none none none'
-                    },
-                    onUpdate() {
-                        if (priceRef.current) {
-                            // BUG FIX #16 cont: read from the plain object — always a clean number
-                            priceRef.current.textContent =
-                                '₹' + Math.round(counter.value).toLocaleString('en-IN');
-                        }
-                    },
-                    onStart() {
-                        // BUG FIX #17: The scale + opacity entrance animation was also
-                        // targeting priceRef directly via a separate fromTo. Combining
-                        // both on the same element without a timeline causes them to
-                        // conflict. Separate the entrance (scale/opacity) from the
-                        // counter (value) by animating scale/opacity independently here.
-                        gsap.fromTo(priceRef.current,
-                            { scale: 0.5, opacity: 0 },
-                            { scale: 1, opacity: 1, duration: 0.8, ease: 'power2.out' }
-                        );
+                        start: 'top bottom', end: 'bottom top',
+                        scrub: 2,
                     }
                 }
             );
 
-            // CTA button bounce
-            gsap.fromTo(ctaRef.current,
-                { y: 50, opacity: 0 },
+            /* 2 ── PARALLAX: grid layer drifts at medium speed */
+            gsap.fromTo(gridRef.current,
+                { yPercent: 20, opacity: 0 },
                 {
-                    y: 0,
-                    opacity: 1,
-                    duration: 1,
-                    ease: 'elastic.out(1, 0.5)',
+                    yPercent: -15, opacity: 1, ease: 'none',
                     scrollTrigger: {
                         trigger: containerRef.current,
-                        start: 'top 60%',
-                        toggleActions: 'play none none none'
+                        start: 'top bottom', end: 'bottom top',
+                        scrub: 2.5,
                     }
                 }
             );
 
-            // BUG FIX #18: The continuous glow pulse is created OUTSIDE the
-            // scrollTrigger, so it starts immediately on mount regardless of
-            // scroll position, and — critically — it is NOT killed by ctx.revert()
-            // because ctx.revert() only kills tweens registered within the ctx scope.
-            // Since this tween is inside the ctx callback it IS captured, but
-            // it starts before the CTA is visible (opacity: 0 from the entrance
-            // tween above), causing a flash of the glow shadow before the button
-            // appears. FIX: delay until after the entrance animation completes.
-            gsap.to(ctaRef.current, {
-                boxShadow: '0 0 40px rgba(56, 189, 248, 0.8)',
-                duration: 1.5,
-                repeat: -1,
-                yoyo: true,
-                ease: 'sine.inOut',
-                delay: 1.2 // BUG FIX #18: wait for entrance (elastic.out ~1s)
+            /* 3 ── LABEL + RULE entrance */
+            gsap.from(labelRef.current, {
+                opacity: 0, x: -22, duration: 0.8, ease: 'power3.out',
+                scrollTrigger: { trigger: containerRef.current, start: 'top 84%' }
             });
+            gsap.from(lineRef.current, {
+                scaleX: 0, transformOrigin: 'left center', duration: 1.1, ease: 'power3.out', delay: 0.1,
+                scrollTrigger: { trigger: containerRef.current, start: 'top 84%' }
+            });
+
+            /* 4 ── SPLITTYPE: "Starting At" heading — chars scrub reveal */
+            if (headingRef.current) {
+                splitHeading.current = new SplitType(headingRef.current, { types: 'chars' });
+                gsap.from(splitHeading.current.chars, {
+                    y: '120%', opacity: 0,
+                    stagger: 0.03, ease: 'none',
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top 78%', end: 'top 30%',
+                        scrub: 0.8,
+                    }
+                });
+            }
+
+            /* 5 ── PRICE COUNTER: scrub-linked from 0 → 8000 */
+            const priceST = ScrollTrigger.create({
+                trigger: containerRef.current,
+                start: 'top 65%',
+                end: 'top 10%',
+                scrub: 1.5,
+                onUpdate(self) {
+                    const val = Math.round(self.progress * 8000 / 100) * 100;
+                    if (priceRef.current) {
+                        priceRef.current.textContent = '₹' + val.toLocaleString('en-IN');
+                    }
+                }
+            });
+
+            /* 6 ── PRICE scale-in entrance (one-shot, before scrub kicks in) */
+            gsap.fromTo(priceRef.current,
+                { scale: 0.55, opacity: 0, y: 40 },
+                {
+                    scale: 1, opacity: 1, y: 0, duration: 1, ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top 72%',
+                        toggleActions: 'play none none none',
+                    }
+                }
+            );
+
+            /* 7 ── SUBTITLE fade */
+            gsap.from(subtitleRef.current, {
+                opacity: 0, y: 26, duration: 0.9, ease: 'power3.out',
+                scrollTrigger: {
+                    trigger: containerRef.current, start: 'top 62%',
+                    toggleActions: 'play none none none',
+                }
+            });
+
+            /* 8 ── CTA elastic bounce */
+            gsap.fromTo(ctaRef.current,
+                { y: 52, opacity: 0 },
+                {
+                    y: 0, opacity: 1, duration: 1.1, ease: 'elastic.out(1, 0.5)',
+                    scrollTrigger: {
+                        trigger: containerRef.current, start: 'top 58%',
+                        toggleActions: 'play none none none',
+                    }
+                }
+            );
+
+            /* 9 ── CTA GLOW PULSE (after entrance settles) */
+            gsap.to(ctaRef.current, {
+                boxShadow: '0 0 52px rgba(56,189,248,0.7)',
+                duration: 1.6, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 1.4,
+            });
+
+            /* 10 ── PERKS stagger */
+            const perkEls = perksRef.current?.querySelectorAll('.pt-perk');
+            if (perkEls?.length) {
+                gsap.from(perkEls, {
+                    opacity: 0, y: 22, stagger: 0.12, duration: 0.7, ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: perksRef.current, start: 'top 88%',
+                        toggleActions: 'play none none none',
+                    }
+                });
+            }
 
         }, containerRef);
 
-        return () => ctx.revert();
+        return () => {
+            ctx.revert();
+            splitHeading.current?.revert();
+        };
     }, []);
 
     return (
-        <div
-            ref={containerRef}
-            style={{
-                minHeight: '80vh',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '100px 5%',
-                background: 'linear-gradient(180deg, #000000 0%, #000000 100%)',
-                textAlign: 'center',
-                position: 'relative'
-            }}
-        >
-            <div style={{
-                position: 'absolute',
-                top: 0, left: 0,
-                width: '100%', height: '150px',
-                background: 'linear-gradient(to bottom, #000000, transparent)',
-                pointerEvents: 'none'
+        <div ref={containerRef} style={{
+            position: 'relative',
+            minHeight: '85vh',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            padding: '130px 5% 110px',
+            background: '#000', textAlign: 'center',
+            overflow: 'hidden',
+        }}>
+
+            {/* PARALLAX LAYER 1: ambient glow blob */}
+            <div ref={bgGlowRef} style={{
+                position: 'absolute', top: '10%', left: '50%',
+                transform: 'translateX(-50%)',
+                width: 600, height: 600, borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(56,189,248,0.07) 0%, transparent 70%)',
+                filter: 'blur(80px)', pointerEvents: 'none', zIndex: 0,
+                willChange: 'transform',
             }} />
 
-            <p style={{
-                fontSize: 'clamp(18px, 2vw, 24px)',
-                color: '#a0a0a0',
-                marginBottom: '20px',
-                textTransform: 'uppercase',
-                letterSpacing: '3px',
-                fontFamily: '"Inter", sans-serif'
-            }}>
-                Starting At
-            </p>
+            {/* PARALLAX LAYER 2: subtle dot/grid */}
+            <div ref={gridRef} style={{
+                position: 'absolute', inset: 0, zIndex: 1,
+                backgroundImage: `
+          linear-gradient(rgba(56,189,248,0.055) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(56,189,248,0.055) 1px, transparent 1px)
+        `,
+                backgroundSize: '64px 64px',
+                pointerEvents: 'none', willChange: 'transform',
+            }} />
 
-            {/* BUG FIX #16 cont: initial display value set here; GSAP updates
-                via textContent (not innerHTML) for safety and performance */}
-            <div
-                ref={priceRef}
-                style={{
-                    fontSize: 'clamp(60px, 12vw, 150px)',
-                    fontWeight: 900,
-                    color: '#38bdf8',
-                    fontFamily: '"Syne", sans-serif',
-                    textShadow: '0 0 60px rgba(56, 189, 248, 0.5)',
-                    marginBottom: '20px'
-                }}
-            >
-                ₹0
-            </div>
-
-            <p style={{
-                fontSize: 'clamp(16px, 2vw, 22px)',
-                color: '#a0a0a0',
-                marginBottom: '50px',
-                fontFamily: '"Inter", sans-serif',
-                maxWidth: '500px',
-                lineHeight: 1.6
-            }}>
-                Professional websites without the agency markup. Simple pricing, transparent process.
-            </p>
-
-            <button
-                ref={ctaRef}
-                style={{
-                    padding: '20px 60px',
-                    fontSize: '20px',
-                    fontWeight: 700,
-                    background: 'linear-gradient(135deg, #38bdf8, #00d4ff)',
-                    color: '#000',
-                    border: 'none',
-                    borderRadius: '50px',
-                    cursor: 'pointer',
-                    textTransform: 'uppercase',
-                    letterSpacing: '2px',
-                    boxShadow: '0 10px 40px rgba(56, 189, 248, 0.3)',
-                    // BUG FIX #19: CSS `transition: transform` on the button conflicts
-                    // with GSAP animating `scale` on the same element (onMouseEnter/Leave).
-                    // When GSAP sets transform via matrix3d, the CSS transition intercepts
-                    // it and causes jank or duplicate animation. Remove the CSS transition.
-                    // transition: 'transform 0.3s ease'  ← REMOVED
-                }}
-                onMouseEnter={(e) => {
-                    gsap.to(e.target, { scale: 1.1, duration: 0.3, ease: 'back.out(2)' });
-                }}
-                onMouseLeave={(e) => {
-                    gsap.to(e.target, { scale: 1, duration: 0.3, ease: 'power2.out' });
-                }}
-                onClick={() => {
-                    document.querySelector('.contact-section')?.scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                }}
-            >
-                Get Started →
-            </button>
-
+            {/* Top fade */}
             <div style={{
-                marginTop: '60px',
-                display: 'flex',
-                gap: '40px',
-                flexWrap: 'wrap',
-                justifyContent: 'center'
-            }}>
-                {['No Hidden Fees', 'Fast Delivery', '30 Days Support'].map((item, index) => (
-                    <div
-                        key={index}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            color: '#a0a0a0',
-                            fontSize: '14px',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px'
-                        }}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 20 20">
-                            <circle cx="10" cy="10" r="9" fill="none" stroke="#38bdf8" strokeWidth="2" />
-                            <path d="M6 10 L9 13 L14 7" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        {item}
-                    </div>
-                ))}
+                position: 'absolute', top: 0, left: 0, width: '100%', height: 180,
+                background: 'linear-gradient(to bottom, #000, transparent)',
+                pointerEvents: 'none', zIndex: 2,
+            }} />
+
+            {/* CONTENT */}
+            <div style={{ position: 'relative', zIndex: 3, width: '100%', maxWidth: 680 }}>
+
+                {/* Label + rule */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 44 }}>
+                    <span ref={labelRef} style={{
+                        fontFamily: 'DM Sans, sans-serif',
+                        fontSize: 11, fontWeight: 500,
+                        letterSpacing: '0.28em', color: '#38bdf8',
+                        textTransform: 'uppercase', whiteSpace: 'nowrap',
+                    }}>Pricing</span>
+                    <div ref={lineRef} style={{
+                        flex: 1, height: 1,
+                        background: 'linear-gradient(to right, #38bdf8, transparent)',
+                    }} />
+                </div>
+
+                {/* "Starting At" — SplitType scrub reveal */}
+                <p ref={headingRef} style={{
+                    fontFamily: 'DM Sans, sans-serif',
+                    fontSize: 'clamp(11px, 1.4vw, 13px)',
+                    color: 'rgba(255,255,255,0.35)',
+                    letterSpacing: '0.28em', textTransform: 'uppercase',
+                    marginBottom: 14, overflow: 'hidden',
+                }}>
+                    Starting At
+                </p>
+
+                {/* Price — scrub counter */}
+                <div ref={priceRef} style={{
+                    fontFamily: 'Outfit, sans-serif',
+                    fontSize: 'clamp(72px, 15vw, 168px)',
+                    fontWeight: 800, lineHeight: 1,
+                    letterSpacing: '-0.045em',
+                    color: '#38bdf8',
+                    textShadow: '0 0 100px rgba(56,189,248,0.3)',
+                    marginBottom: 28,
+                    willChange: 'transform',
+                }}>
+                    ₹0
+                </div>
+
+                {/* Subtitle */}
+                <p ref={subtitleRef} style={{
+                    fontFamily: 'DM Sans, sans-serif',
+                    fontSize: 'clamp(14px, 1.7vw, 18px)',
+                    color: 'rgba(255,255,255,0.42)',
+                    maxWidth: 460, margin: '0 auto 56px',
+                    lineHeight: 1.75,
+                }}>
+                    Professional websites without the agency markup.<br />
+                    Simple pricing, transparent process.
+                </p>
+
+                {/* CTA */}
+                <button
+                    ref={ctaRef}
+                    style={{
+                        padding: '18px 58px',
+                        fontFamily: 'DM Sans, sans-serif',
+                        fontSize: 12, fontWeight: 600,
+                        letterSpacing: '0.16em', textTransform: 'uppercase',
+                        background: 'linear-gradient(135deg, #38bdf8, #00d4ff)',
+                        color: '#000', border: 'none', borderRadius: 0,
+                        boxShadow: '0 8px 40px rgba(56,189,248,0.25)',
+                        cursor: 'pointer',
+                    }}
+                    onMouseEnter={e => gsap.to(e.currentTarget, { scale: 1.07, duration: 0.26, ease: 'back.out(2)' })}
+                    onMouseLeave={e => gsap.to(e.currentTarget, { scale: 1, duration: 0.26, ease: 'power2.out' })}
+                    onClick={() => document.querySelector('#contact-section')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                    Get Started
+                    <svg style={{ marginLeft: 10, verticalAlign: 'middle' }} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                </button>
+
+                {/* Perks */}
+                <div ref={perksRef} style={{
+                    display: 'flex', flexWrap: 'wrap',
+                    justifyContent: 'center', gap: '12px 44px',
+                    marginTop: 60,
+                }}>
+                    {perks.map((item, i) => (
+                        <div key={i} className="pt-perk" style={{
+                            display: 'flex', alignItems: 'center', gap: 10,
+                            fontFamily: 'DM Sans, sans-serif',
+                            fontSize: 11, fontWeight: 500,
+                            letterSpacing: '0.18em', textTransform: 'uppercase',
+                            color: 'rgba(255,255,255,0.38)',
+                        }}>
+                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                                <circle cx="7.5" cy="7.5" r="6.5" stroke="#38bdf8" strokeWidth="1" />
+                                <path d="M4.5 7.5l2.5 2.5 4-4" stroke="#38bdf8" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            {item}
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

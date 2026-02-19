@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
+import { gsap} from '../../gsap-config';
 
 // ── Character scramble utility ────────────────────────────────────────────────
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&';

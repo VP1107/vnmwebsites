@@ -1,142 +1,15 @@
-.what-we-do {
+/* ═══════════════════════════════════════════════
+   WhatWeDo — Section shell
+   ═══════════════════════════════════════════════ */
+.wwd-section {
     position: relative;
-    width: 100vw;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: #000;
-    padding: var(--spacing-xxl) var(--spacing-lg);
-    perspective: 2000px;
-    overflow: hidden;
-}
-
-.section-title {
-    font-family: var(--font-accent);
-    font-size: clamp(36px, 6vw, 72px);
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: var(--spacing-xxl);
-    text-align: center;
-}
-
-.carousel-container {
+    background: #000000;
     width: 100%;
-    max-width: 1200px;
-    height: 500px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    perspective: 2000px;
 }
 
-.carousel-3d {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
-    will-change: transform;
-}
-
-.service-card {
-    position: absolute;
-    width: 400px;
-    height: 500px;
-    left: 50%;
-    top: 50%;
-    margin-left: -200px;
-    margin-top: -250px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid var(--color-accent-green);
-    border-radius: 20px;
-    padding: var(--spacing-lg);
-    transform-style: preserve-3d;
-    backface-visibility: hidden;
-    cursor: grab;
-    transition: box-shadow 0.3s ease;
-    box-shadow: 0 20px 60px rgba(0, 255, 136, 0.2);
-}
-
-.service-card:active {
-    cursor: grabbing;
-}
-
-.card-content {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-md);
-    text-align: center;
-}
-
-.card-title {
-    font-family: var(--font-accent);
-    font-size: 48px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    background: var(--gradient-cyber);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.card-description {
-    font-family: var(--font-body);
-    font-size: 18px;
-    color: rgba(255, 255, 255, 0.7);
-    max-width: 300px;
-}
-
-.card-video-placeholder {
-    width: 100%;
-    height: 200px;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-top: var(--spacing-md);
-}
-
-.placeholder-gradient {
-    width: 100%;
-    height: 100%;
-    background: var(--gradient-cyber);
-    background-size: 200% 200%;
-    animation: gradient-shift 3s ease infinite;
-    opacity: 0.3;
-}
-
-.scroll-hint {
-    font-family: var(--font-accent);
-    font-size: 12px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.5);
-    margin-top: var(--spacing-xxl);
-    text-align: center;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .carousel-container {
-        height: 400px;
-    }
-
-    .service-card {
-        width: 300px;
-        height: 400px;
-        margin-left: -150px;
-        margin-top: -200px;
-    }
-
-    .card-title {
-        font-size: 36px;
-    }
-
-    .card-description {
-        font-size: 16px;
-    }
+/* ═══════════════════════════════════════════════
+   ServiceCard — sc-rule class (used in JSX)
+   ═══════════════════════════════════════════════ */
+.sc-rule {
+    transform-origin: left center;
 }

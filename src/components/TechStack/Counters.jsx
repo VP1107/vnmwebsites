@@ -1,9 +1,8 @@
 import { useRef, useEffect, useState } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './Counters.css';
+import { gsap, ScrollTrigger } from '../../gsap-config';
 
-gsap.registerPlugin(ScrollTrigger);
+
 
 const COUNTER_DATA = [
     { target: 12, suffix: '+', label: 'Projects shipped' },

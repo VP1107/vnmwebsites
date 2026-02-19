@@ -1,214 +1,265 @@
 import { useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import SplitType from 'split-type';
 import aboutData from '../../data/about.json';
+import { gsap} from '../../gsap-config';
 
 const SplitPhotos = () => {
-    const containerRef = useRef(null);
-    const leftPhotoRef = useRef(null);
-    const rightPhotoRef = useRef(null);
-    const centerTextRef = useRef(null);
+  const containerRef  = useRef(null);
+  const leftCardRef   = useRef(null);
+  const rightCardRef  = useRef(null);
+  const leftImgRef    = useRef(null);
+  const rightImgRef   = useRef(null);
+  const leftNameRef   = useRef(null);
+  const rightNameRef  = useRef(null);
+  const leftTagRef    = useRef(null);
+  const rightTagRef   = useRef(null);
+  const centerRef     = useRef(null);
+  const brandRef      = useRef(null);
+  const ruleRef       = useRef(null);
+  const statsRef      = useRef([]);
+  const splitLeft     = useRef(null);
+  const splitRight    = useRef(null);
+  const splitBrand    = useRef(null);
 
-    useEffect(() => {
-        const ctx = gsap.context(() => {
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top bottom',
-                    end: 'bottom top',
-                    scrub: 1
-                }
-            });
+  const team    = aboutData.team   || [{ name:'Vatsal', role:'Designer', color:'#38bdf8' }, { name:'Mann', role:'Developer', color:'#00d4ff' }];
+  const brand   = aboutData.brand  || { title: 'V&M', subtitle: 'Two builders. One vision.' };
 
-            // Left photo moves slower (parallax) - Starts offset
-            tl.fromTo(leftPhotoRef.current,
-                { y: 100, opacity: 0.5, rotation: -2 },
-                { y: -100, opacity: 1, rotation: 0 },
-                0
-            );
+  const stats = [
+    { value: '100%', label: 'Client Focus' },
+    { value: '2×',   label: 'Faster Delivery' },
+    { value: '∞',    label: 'Ambition' },
+  ];
 
-            // Right photo moves faster (opposite parallax)
-            tl.fromTo(rightPhotoRef.current,
-                { y: 200, opacity: 0.5, rotation: 2 },
-                { y: -200, opacity: 1, rotation: 0 },
-                0
-            );
+  useEffect(() => {
+    const ctx = gsap.context(() => {
 
-            // Center text scales up dramatically
-            tl.fromTo(centerTextRef.current,
-                { scale: 0.5, opacity: 0 },
-                { scale: 1.2, opacity: 1 },
-                0.2
-            )
-                .to(centerTextRef.current,
-                    { scale: 1, opacity: 0.8 },
-                    0.6
-                );
-        }, containerRef);
+      /* ── CARDS SLIDE IN FROM SIDES (scrub) ── */
+      gsap.fromTo(leftCardRef.current,
+        { x: '-38%', opacity: 0, rotate: -4 },
+        {
+          x: '0%', opacity: 1, rotate: 0, ease: 'none',
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top 90%', end: 'top 20%',
+            scrub: 1.2, invalidateOnRefresh: true,
+          }
+        }
+      );
 
-        return () => ctx.revert();
-    }, []);
+      gsap.fromTo(rightCardRef.current,
+        { x: '38%', opacity: 0, rotate: 4 },
+        {
+          x: '0%', opacity: 1, rotate: 0, ease: 'none',
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top 90%', end: 'top 20%',
+            scrub: 1.2, invalidateOnRefresh: true,
+          }
+        }
+      );
 
-    return (
-        <div
-            ref={containerRef}
-            style={{
-                height: '120vh',
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                padding: '0 5%',
-                background: [
-                    'radial-gradient(ellipse 60vw 60vw at 90% 10%, rgba(56,189,248,0.22) 0%, transparent 70%)',
-                    'radial-gradient(ellipse 45vw 45vw at 10% 90%, rgba(14,165,233,0.18) 0%, transparent 65%)',
-                    '#000'
-                ].join(', ')
-            }}
-        >
-            {/* Left Photo - Vatsal */}
-            <div
-                ref={leftPhotoRef}
-                style={{
-                    position: 'absolute',
-                    left: '5%',
-                    width: '40%', // Slightly smaller to fit
-                    height: '60vh',
-                    borderRadius: '20px',
-                    overflow: 'hidden',
-                    boxShadow: '0 15px 50px rgba(56, 189, 248, 0.1)',
-                    border: '1px solid rgba(56, 189, 248, 0.3)',
-                    background: '#111'
-                }}
-            >
-                {/* Photo Vatsal */}
-                <img
-                    src={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
-                    alt="Vatsal"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(20%)' }}
-                />
+      /* ── PHOTO PARALLAX inside cards ── */
+      gsap.fromTo(leftImgRef.current,
+        { yPercent: 12 },
+        {
+          yPercent: -12, ease: 'none',
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top bottom', end: 'bottom top',
+            scrub: 1.8, invalidateOnRefresh: true,
+          }
+        }
+      );
 
-                {/* Name Tag Overlay */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: '30px',
-                    left: '30px',
-                    background: 'rgba(0, 0, 0, 0.8)',
-                    padding: '15px 25px',
-                    borderRadius: '10px',
-                    backdropFilter: 'blur(10px)',
-                    borderLeft: `4px solid ${aboutData.team[0].color}`
-                }}>
-                    <p style={{
-                        color: aboutData.team[0].color,
-                        fontSize: '12px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '2px',
-                        marginBottom: '5px',
-                        fontFamily: '"Inter", sans-serif'
-                    }}>{aboutData.team[0].role}</p>
-                    <h3 style={{
-                        color: '#ffffff',
-                        fontSize: '24px',
-                        fontWeight: 700,
-                        margin: 0,
-                        fontFamily: '"Syne", sans-serif'
-                    }}>{aboutData.team[0].name}</h3>
-                </div>
-            </div>
+      gsap.fromTo(rightImgRef.current,
+        { yPercent: -12 },
+        {
+          yPercent: 12, ease: 'none',
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top bottom', end: 'bottom top',
+            scrub: 1.8, invalidateOnRefresh: true,
+          }
+        }
+      );
 
-            {/* Right Photo - Mann */}
-            <div
-                ref={rightPhotoRef}
-                style={{
-                    position: 'absolute',
-                    right: '5%',
-                    width: '40%',
-                    height: '60vh',
-                    borderRadius: '20px',
-                    overflow: 'hidden',
-                    boxShadow: '0 15px 50px rgba(0, 212, 255, 0.1)',
-                    border: '1px solid rgba(0, 212, 255, 0.3)',
-                    background: '#111'
-                }}
-            >
-                {/* Photo Mann */}
-                <img
-                    src={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
-                    alt="Mann"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(20%)' }}
-                />
+      /* ── NAME TAGS: SplitType words+chars stagger ── */
+      splitLeft.current  = new SplitType(leftNameRef.current,  { types: 'words,chars' });
+      splitRight.current = new SplitType(rightNameRef.current, { types: 'words,chars' });
+      [splitLeft.current, splitRight.current].forEach(split => {
+        split.words.forEach(w => {
+          w.style.display    = 'inline-block';
+          w.style.whiteSpace = 'nowrap';
+          w.style.overflow   = 'hidden';
+          w.style.verticalAlign = 'bottom';
+        });
+        split.chars.forEach(c => {
+          c.style.display       = 'inline-block';
+          c.style.verticalAlign = 'bottom';
+        });
+      });
 
-                {/* Name Tag Overlay */}
-                <div style={{
-                    position: 'absolute',
-                    bottom: '30px',
-                    right: '30px',
-                    background: 'rgba(0, 0, 0, 0.8)',
-                    padding: '15px 25px',
-                    borderRadius: '10px',
-                    backdropFilter: 'blur(10px)',
-                    borderRight: `4px solid ${aboutData.team[1].color}`
-                }}>
-                    <p style={{
-                        color: aboutData.team[1].color,
-                        fontSize: '12px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '2px',
-                        marginBottom: '5px',
-                        textAlign: 'right',
-                        fontFamily: '"Inter", sans-serif'
-                    }}>{aboutData.team[1].role}</p>
-                    <h3 style={{
-                        color: '#ffffff',
-                        fontSize: '24px',
-                        fontWeight: 700,
-                        margin: 0,
-                        textAlign: 'right',
-                        fontFamily: '"Syne", sans-serif'
-                    }}>{aboutData.team[1].name}</h3>
-                </div>
-            </div>
+      gsap.from(splitLeft.current.chars, {
+        y: 30, opacity: 0, stagger: 0.04, duration: 0.7, ease: 'power3.out',
+        scrollTrigger: {
+          trigger: leftCardRef.current,
+          start: 'top 75%',
+          toggleActions: 'play none none reverse',
+          invalidateOnRefresh: true,
+        }
+      });
 
-            {/* Center Connecting Text */}
-            <div
-                ref={centerTextRef}
-                style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    zIndex: 10,
-                    textAlign: 'center'
-                }}
-            >
-                <h2 style={{
-                    fontSize: 'clamp(50px, 8vw, 120px)',
-                    fontWeight: 900,
-                    color: '#ffffff',
-                    textShadow: '0 0 40px rgba(0, 0, 0, 0.9)',
-                    letterSpacing: '0.05em',
-                    WebkitTextStroke: '2px #38bdf8',
-                    WebkitTextFillColor: 'transparent',
-                    fontFamily: '"Syne", sans-serif',
-                    margin: 0
-                }}>
-                    {aboutData.brand.title}
-                </h2>
-                <p style={{
-                    color: '#a0a0a0',
-                    fontSize: '18px',
-                    marginTop: '10px',
-                    letterSpacing: '3px',
-                    textTransform: 'uppercase',
-                    fontFamily: '"Inter", sans-serif'
-                }}>
-                    {aboutData.brand.subtitle}
-                </p>
-            </div>
+      gsap.from(splitRight.current.chars, {
+        y: 30, opacity: 0, stagger: 0.04, duration: 0.7, ease: 'power3.out', delay: 0.15,
+        scrollTrigger: {
+          trigger: rightCardRef.current,
+          start: 'top 75%',
+          toggleActions: 'play none none reverse',
+          invalidateOnRefresh: true,
+        }
+      });
+
+      /* ── ROLE TAGS fade in ── */
+      gsap.from([leftTagRef.current, rightTagRef.current], {
+        opacity: 0, y: 12, stagger: 0.15, duration: 0.6, ease: 'power3.out',
+        scrollTrigger: {
+          trigger: containerRef.current, start: 'top 70%',
+          toggleActions: 'play none none reverse', invalidateOnRefresh: true,
+        }
+      });
+
+      /* ── CENTER BRAND: SplitType words+chars scrub reveal ── */
+      splitBrand.current = new SplitType(brandRef.current, { types: 'words,chars' });
+      splitBrand.current.words.forEach(w => {
+        w.style.display       = 'inline-block';
+        w.style.whiteSpace    = 'nowrap';
+        w.style.overflow      = 'hidden';
+        w.style.verticalAlign = 'bottom';
+      });
+      splitBrand.current.chars.forEach(c => {
+        c.style.display       = 'inline-block';
+        c.style.verticalAlign = 'bottom';
+      });
+      gsap.from(splitBrand.current.chars, {
+        y: '120%', opacity: 0, stagger: 0.018, ease: 'none',
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top 75%', end: 'top 20%',
+          scrub: 0.9, invalidateOnRefresh: true,
+        }
+      });
+
+      /* ── CENTER RULE draws ── */
+      gsap.fromTo(ruleRef.current,
+        { scaleX: 0 },
+        {
+          scaleX: 1, transformOrigin: 'center center', ease: 'none',
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top 65%', end: 'top 25%',
+            scrub: 0.9, invalidateOnRefresh: true,
+          }
+        }
+      );
+
+      /* ── STATS stagger up ── */
+      const statEls = statsRef.current.filter(Boolean);
+      if (statEls.length) {
+        gsap.from(statEls, {
+          opacity: 0, y: 28, stagger: 0.12, duration: 0.75, ease: 'power3.out',
+          scrollTrigger: {
+            trigger: centerRef.current, start: 'top 72%',
+            toggleActions: 'play none none reverse', invalidateOnRefresh: true,
+          }
+        });
+      }
+
+    }, containerRef);
+
+    return () => {
+      ctx.revert();
+      splitLeft.current?.revert();
+      splitRight.current?.revert();
+      splitBrand.current?.revert();
+    };
+  }, []);
+
+  return (
+    <div ref={containerRef} className="sp-wrap">
+
+      {/* Ambient glows */}
+      <div className="sp-glow sp-glow--left"  style={{ background: `radial-gradient(circle, ${team[0]?.color || '#38bdf8'}18 0%, transparent 70%)` }} />
+      <div className="sp-glow sp-glow--right" style={{ background: `radial-gradient(circle, ${team[1]?.color || '#00d4ff'}18 0%, transparent 70%)` }} />
+
+      {/* ── LEFT CARD ── */}
+      <div ref={leftCardRef} className="sp-card sp-card--left" style={{ borderColor: team[0]?.color || '#38bdf8' }}>
+        <div className="sp-img-wrap">
+          <img
+            ref={leftImgRef}
+            src={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
+            alt={team[0]?.name}
+            className="sp-img"
+          />
+          <div className="sp-img-overlay" />
         </div>
-    );
+
+        {/* Name tag */}
+        <div className="sp-nametag sp-nametag--left" style={{ borderColor: team[0]?.color }}>
+          <p ref={leftTagRef} className="sp-role" style={{ color: team[0]?.color }}>
+            {team[0]?.role}
+          </p>
+          <h3 ref={leftNameRef} className="sp-name">{team[0]?.name}</h3>
+        </div>
+
+        {/* Glowing corner accent */}
+        <div className="sp-corner-accent" style={{ background: team[0]?.color }} />
+      </div>
+
+      {/* ── CENTER ── */}
+      <div ref={centerRef} className="sp-center">
+        <div style={{ overflow: 'hidden' }}>
+          <h2 ref={brandRef} className="sp-brand">{brand.title}</h2>
+        </div>
+
+        <div ref={ruleRef} className="sp-center-rule" />
+
+        <p className="sp-subtitle">{brand.subtitle}</p>
+
+        {/* Stats */}
+        <div className="sp-stats">
+          {stats.map((s, i) => (
+            <div key={i} ref={el => statsRef.current[i] = el} className="sp-stat">
+              <span className="sp-stat-value">{s.value}</span>
+              <span className="sp-stat-label">{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── RIGHT CARD ── */}
+      <div ref={rightCardRef} className="sp-card sp-card--right" style={{ borderColor: team[1]?.color || '#00d4ff' }}>
+        <div className="sp-img-wrap">
+          <img
+            ref={rightImgRef}
+            src={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
+            alt={team[1]?.name}
+            className="sp-img"
+          />
+          <div className="sp-img-overlay" />
+        </div>
+
+        {/* Name tag */}
+        <div className="sp-nametag sp-nametag--right" style={{ borderColor: team[1]?.color }}>
+          <p ref={rightTagRef} className="sp-role" style={{ color: team[1]?.color }}>
+            {team[1]?.role}
+          </p>
+          <h3 ref={rightNameRef} className="sp-name">{team[1]?.name}</h3>
+        </div>
+
+        <div className="sp-corner-accent" style={{ background: team[1]?.color }} />
+      </div>
+    </div>
+  );
 };
 
 export default SplitPhotos;

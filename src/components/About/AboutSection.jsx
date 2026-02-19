@@ -1,37 +1,36 @@
 import { useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
 import VideoIntro from './VideoIntro';
 import SplitPhotos from './SplitPhotos';
 import DesignVideo from './DesignVideo';
 import FinalCTA from './FinalCTA';
+import './AboutSection.css';
 
-gsap.registerPlugin(ScrollTrigger);
+import { ScrollTrigger } from '../../gsap-config';
 
 const AboutSection = () => {
     const sectionRef = useRef(null);
 
     useEffect(() => {
-        // We rely on the global ScrollTrigger setup, but we can add specific section logic here if needed.
-        const ctx = gsap.context(() => {
-            // Any section-global animations
-        }, sectionRef);
+        // FIX: was requestAnimationFrame — too early, child useEffects may not have
+        // registered their ScrollTriggers yet. 300ms gives all children time to mount.
+        const t = setTimeout(() => ScrollTrigger.refresh(), 300);
 
-        return () => ctx.revert();
+        let resizeTimer;
+        const onResize = () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => ScrollTrigger.refresh(), 200);
+        };
+        window.addEventListener('resize', onResize);
+
+        return () => {
+            clearTimeout(t);
+            clearTimeout(resizeTimer);
+            window.removeEventListener('resize', onResize);
+        };
     }, []);
 
     return (
-        <section
-            ref={sectionRef}
-            className="about-section"
-            id="about-section"
-            style={{
-                position: 'relative',
-                background: '#000000',
-                zIndex: 10 // Ensure it sits above subsequent sections if needed
-            }}
-        >
+        <section ref={sectionRef} id="about-section" className="about-section">
             <VideoIntro />
             <SplitPhotos />
             <DesignVideo />

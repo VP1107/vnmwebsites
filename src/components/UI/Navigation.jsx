@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
+import { gsap} from '../../gsap-config';
 import './Navigation.css';
 
 const Navigation = () => {
@@ -7,7 +7,6 @@ const Navigation = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const menuRef = useRef(null);
     const buttonRef = useRef(null);
-    const navLinksRef = useRef(null);
     const tweensRef = useRef([]); // ✅ Track all tweens for cleanup
 
     // ✅ FIX: Passive scroll listener

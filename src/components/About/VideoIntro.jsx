@@ -1,171 +1,206 @@
 import { useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+import SplitType from 'split-type';
+import { gsap, ScrollTrigger } from '../../gsap-config';
 
 const VideoIntro = () => {
-    const containerRef = useRef(null);
-    const videoRef = useRef(null);
-    const overlayRef = useRef(null);
-    const textRef = useRef(null);
+  const containerRef  = useRef(null);
+  const videoRef      = useRef(null);
+  const bgLayerRef    = useRef(null);
+  const gridRef       = useRef(null);
+  const overlayRef    = useRef(null);
+  const scanRef       = useRef(null);
+  const labelRef      = useRef(null);
+  const ruleRef       = useRef(null);
+  const headingRef    = useRef(null);
+  const scrollHintRef = useRef(null);
+  const splitH        = useRef(null);
+  const splitL        = useRef(null);
 
-    useEffect(() => {
-        const ctx = gsap.context(() => {
-            // Video zoom + opacity on scroll
-            gsap.to(videoRef.current, {
-                scale: 1.3,
-                opacity: 0.3,
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top top',
-                    end: 'bottom top',
-                    scrub: 1,
-                    pin: false
-                }
-            });
+  useEffect(() => {
+    const ctx = gsap.context(() => {
 
-            // Text fade in then out
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top top',
-                    end: 'bottom top',
-                    scrub: 1
-                }
-            });
+      /* ── PIN for 2× scroll height ── */
+      ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: 'top top',
+        end: '+=180%',
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+      });
 
-            tl.fromTo(textRef.current,
-                { opacity: 0, y: 50, scale: 0.8 },
-                { opacity: 1, y: 0, scale: 1, duration: 0.3 }
-            )
-                .to(textRef.current,
-                    { opacity: 0, y: -50, scale: 1.2, duration: 0.3 },
-                    0.7
-                );
+      /* ── LAYER 1: Video slow zoom-out ── */
+      gsap.fromTo(bgLayerRef.current,
+        { scale: 1.3 },
+        {
+          scale: 1, ease: 'none',
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top top', end: '+=180%',
+            scrub: 2, invalidateOnRefresh: true,
+          }
+        }
+      );
 
-            // Overlay vignette darkens as you scroll
-            gsap.to(overlayRef.current, {
-                opacity: 0.9, // Darken more
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top top',
-                    end: 'bottom top',
-                    scrub: 1
-                }
-            });
-        }, containerRef);
+      /* ── LAYER 2: Grid drifts upward ── */
+      gsap.fromTo(gridRef.current,
+        { yPercent: 22, opacity: 0 },
+        {
+          yPercent: -22, opacity: 0.7, ease: 'none',
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top top', end: '+=180%',
+            scrub: 2.8, invalidateOnRefresh: true,
+          }
+        }
+      );
 
-        return () => ctx.revert();
-    }, []);
+      /* ── OVERLAY lightens mid-scroll ── */
+      gsap.fromTo(overlayRef.current,
+        { opacity: 0.92 },
+        {
+          opacity: 0.5, ease: 'none',
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top top', end: '+=90%',
+            scrub: 1, invalidateOnRefresh: true,
+          }
+        }
+      );
 
-    return (
-        <div
-            ref={containerRef}
-            style={{
-                height: '100vh',
-                position: 'relative',
-                overflow: 'hidden',
-                background: '#000000'
-            }}
+      /* ── SCAN LINE sweeps down on entry ── */
+      gsap.fromTo(scanRef.current,
+        { yPercent: -105, opacity: 1 },
+        {
+          yPercent: 210, opacity: 0, ease: 'none',
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top top', end: '+=55%',
+            scrub: 0.8, invalidateOnRefresh: true,
+          }
+        }
+      );
+
+      /* ── LABEL: SplitType chars stagger in ── */
+      splitL.current = new SplitType(labelRef.current, { types: 'chars' });
+      gsap.from(splitL.current.chars, {
+        y: 20, opacity: 0, stagger: 0.025, duration: 0.6, ease: 'power2.out',
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top top',
+          toggleActions: 'play none none none',
+          invalidateOnRefresh: true,
+        }
+      });
+
+      /* ── RULE: scrub draw left→right ── */
+      gsap.fromTo(ruleRef.current,
+        { scaleX: 0 },
+        {
+          scaleX: 1, ease: 'none', transformOrigin: 'left center',
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top top', end: '+=70%',
+            scrub: 0.9, invalidateOnRefresh: true,
+          }
+        }
+      );
+
+      /* ── HEADING: SplitType words+chars scrub clip-reveal ── */
+      splitH.current = new SplitType(headingRef.current, { types: 'words,chars' });
+
+      splitH.current.words.forEach(w => {
+        w.style.display       = 'inline-block';
+        w.style.whiteSpace    = 'nowrap';
+        w.style.overflow      = 'clip';       // FIX: was 'hidden' — clips without hiding animated children
+        w.style.verticalAlign = 'bottom';
+      });
+
+      splitH.current.chars.forEach(c => {
+        c.style.display       = 'inline-block';
+        c.style.verticalAlign = 'bottom';
+        c.style.willChange    = 'transform';  // FIX: prevents paint jank during scrub
+      });
+
+      gsap.from(splitH.current.chars, {
+        y: '115%', opacity: 0, stagger: 0.014, ease: 'none',
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top top', end: '+=100%',
+          scrub: 0.8, invalidateOnRefresh: true,
+        }
+      });
+
+      /* ── SCROLL HINT fades out as you scroll ── */
+      gsap.to(scrollHintRef.current, {
+        opacity: 0, y: 12, ease: 'none',
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: 'top top', end: '+=25%',
+          scrub: 1, invalidateOnRefresh: true,
+        }
+      });
+
+    }, containerRef);
+
+    return () => {
+      ctx.revert();
+      splitH.current?.revert();
+      splitL.current?.revert();
+    };
+  }, []);
+
+  return (
+    <div ref={containerRef} className="vi-wrap">
+
+      {/* LAYER 1 – Video (slowest parallax) */}
+      <div ref={bgLayerRef} className="vi-bg">
+        <video
+          ref={videoRef}
+          autoPlay loop muted playsInline
+          poster={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
+          className="vi-video"
         >
-            {/* Top Fade Gradient */}
-            <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '200px',
-                background: 'linear-gradient(to bottom, #000000, transparent)',
-                zIndex: 4,
-                pointerEvents: 'none'
-            }} />
+          <source src={`${import.meta.env.BASE_URL}videos/intro.mp4`} type="video/mp4" />
+        </video>
+      </div>
 
-            {/* Bottom Fade Gradient */}
-            <div style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                width: '100%',
-                height: '200px',
-                background: 'linear-gradient(to top, #000000, transparent)',
-                zIndex: 4,
-                pointerEvents: 'none'
-            }} />
-            {/* Background Video */}
-            <video
-                ref={videoRef}
-                autoPlay
-                loop
-                muted
-                playsInline
-                poster={`${import.meta.env.BASE_URL}images/responsive_mockup.webp`}
-                style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    minWidth: '100%',
-                    minHeight: '100%',
-                    width: 'auto',
-                    height: 'auto',
-                    transform: 'translate(-50%, -50%)',
-                    objectFit: 'cover',
-                    zIndex: 1,
-                    filter: 'brightness(0.5)'
-                }}
-            >
-                <source src={`${import.meta.env.BASE_URL}videos/intro.mp4`} type="video/mp4" />
-            </video>
+      {/* LAYER 2 – Radial vignette */}
+      <div ref={overlayRef} className="vi-overlay" />
 
-            {/* Dark Overlay */}
-            <div
-                ref={overlayRef}
-                style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    background: 'radial-gradient(circle, transparent 0%, #000000 100%)',
-                    opacity: 0.4,
-                    zIndex: 2
-                }}
-            />
+      {/* LAYER 3 – Cyan dot grid (medium parallax) */}
+      <div ref={gridRef} className="vi-grid" />
 
-            {/* Center Text */}
-            <div
-                ref={textRef}
-                style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    zIndex: 3,
-                    textAlign: 'center',
-                    color: '#ffffff',
-                    width: '100%'
-                }}
-            >
-                <h2 style={{
-                    fontSize: 'clamp(40px, 6vw, 80px)',
-                    fontWeight: 900,
-                    marginBottom: '20px',
-                    letterSpacing: '0.02em',
-                    textShadow: '0 4px 30px rgba(0, 0, 0, 0.8)',
-                    fontFamily: '"Syne", sans-serif'
-                }}>
-                    MEET THE BUILDERS
-                </h2>
-                <div style={{
-                    width: '100px',
-                    height: '3px',
-                    background: 'linear-gradient(90deg, #38bdf8, #00d4ff)',
-                    margin: '0 auto',
-                    boxShadow: '0 0 20px #38bdf8'
-                }} />
-            </div>
+      {/* LAYER 4 – Scan line */}
+      <div ref={scanRef} className="vi-scan" />
+
+      {/* Edge fades */}
+      <div className="vi-fade vi-fade--top" />
+      <div className="vi-fade vi-fade--bottom" />
+
+      {/* FOREGROUND CONTENT */}
+      <div className="vi-content">
+        <p ref={labelRef} className="vi-label">V&amp;M Creations — About</p>
+        <div className="vi-rule-track">
+          <div ref={ruleRef} className="vi-rule" />
         </div>
-    );
+        <h2 ref={headingRef} className="vi-heading">
+          Meet The<br />Builders
+        </h2>
+      </div>
+
+      {/* Corner brackets */}
+      <div className="vi-corner vi-corner--tl" />
+      <div className="vi-corner vi-corner--br" />
+
+      {/* Scroll hint */}
+      <div ref={scrollHintRef} className="vi-scroll-hint">
+        <div className="vi-scroll-line" />
+        <span className="vi-scroll-text">Scroll</span>
+      </div>
+    </div>
+  );
 };
 
 export default VideoIntro;

@@ -16,7 +16,7 @@ class ErrorBoundary extends React.Component {
 
     componentDidCatch(error, errorInfo) {
         // ✅ Only log in development
-        if (process.env.NODE_ENV === 'development') {
+        if (import.meta.env.MODE === 'development') {
             console.error('Uncaught error:', error, errorInfo);
         }
         // ✅ In production, you could send to error tracking service
@@ -51,7 +51,7 @@ class ErrorBoundary extends React.Component {
                     </p>
 
                     {/* ✅ Only show details in development */}
-                    {process.env.NODE_ENV === 'development' && (
+                    {import.meta.env.MODE === 'development' && (
                         <details style={{
                             whiteSpace: 'pre-wrap',
                             textAlign: 'left',
