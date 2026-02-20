@@ -10,7 +10,7 @@
             "Google Apps Script"
         ],
         "image": "images/babybloom-screenshot.webp",
-        "link": "#"
+        "link": "https://vp1107.github.io/frontend-projects/baby-bloom-website/"
     },
     {
         "title": "Manan Shah",
@@ -21,7 +21,7 @@
             "CSS"
         ],
         "image": "images/manan-shah-screenshot.webp",
-        "link": "#"
+        "link": "https://manns3-jpg.github.io/Manan.Shah/"
     },
     {
         "title": "Chef4U",
@@ -33,6 +33,6 @@
             "JS"
         ],
         "image": "images/chef4u-screenshot.webp",
-        "link": "#"
+        "link": "https://vp1107.github.io/frontend-projects/chef4u-sample-website/"
     }
 ]

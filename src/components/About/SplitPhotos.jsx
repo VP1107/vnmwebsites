@@ -1,33 +1,33 @@
 import { useRef, useEffect } from 'react';
 import SplitType from 'split-type';
 import aboutData from '../../data/about.json';
-import { gsap} from '../../gsap-config';
+import { gsap } from '../../gsap-config';
 
 const SplitPhotos = () => {
-  const containerRef  = useRef(null);
-  const leftCardRef   = useRef(null);
-  const rightCardRef  = useRef(null);
-  const leftImgRef    = useRef(null);
-  const rightImgRef   = useRef(null);
-  const leftNameRef   = useRef(null);
-  const rightNameRef  = useRef(null);
-  const leftTagRef    = useRef(null);
-  const rightTagRef   = useRef(null);
-  const centerRef     = useRef(null);
-  const brandRef      = useRef(null);
-  const ruleRef       = useRef(null);
-  const statsRef      = useRef([]);
-  const splitLeft     = useRef(null);
-  const splitRight    = useRef(null);
-  const splitBrand    = useRef(null);
+  const containerRef = useRef(null);
+  const leftCardRef = useRef(null);
+  const rightCardRef = useRef(null);
+  const leftImgRef = useRef(null);
+  const rightImgRef = useRef(null);
+  const leftNameRef = useRef(null);
+  const rightNameRef = useRef(null);
+  const leftTagRef = useRef(null);
+  const rightTagRef = useRef(null);
+  const centerRef = useRef(null);
+  const brandRef = useRef(null);
+  const ruleRef = useRef(null);
+  const statsRef = useRef([]);
+  const splitLeft = useRef(null);
+  const splitRight = useRef(null);
+  const splitBrand = useRef(null);
 
-  const team    = aboutData.team   || [{ name:'Vatsal', role:'Co-Founder', color:'#38bdf8' }, { name:'Mann', role:'Co-Founder', color:'#00d4ff' }];
-  const brand   = aboutData.brand  || { title: 'V&M', subtitle: 'Two builders. One vision.' };
+  const team = aboutData.team || [{ name: 'Vatsal', role: 'Co-Founder', color: '#38bdf8' }, { name: 'Mann', role: 'Co-Founder', color: '#00d4ff' }];
+  const brand = aboutData.brand || { title: 'V&M', subtitle: 'Two builders. One vision.' };
 
   const stats = [
     { value: '100%', label: 'Client Focus' },
-    { value: '2×',   label: 'Faster Delivery' },
-    { value: '∞',    label: 'Ambition' },
+    { value: '2×', label: 'Faster Delivery' },
+    { value: '∞', label: 'Ambition' },
   ];
 
   useEffect(() => {
@@ -84,17 +84,17 @@ const SplitPhotos = () => {
       );
 
       /* ── NAME TAGS: SplitType words+chars stagger ── */
-      splitLeft.current  = new SplitType(leftNameRef.current,  { types: 'words,chars' });
+      splitLeft.current = new SplitType(leftNameRef.current, { types: 'words,chars' });
       splitRight.current = new SplitType(rightNameRef.current, { types: 'words,chars' });
       [splitLeft.current, splitRight.current].forEach(split => {
         split.words.forEach(w => {
-          w.style.display    = 'inline-block';
+          w.style.display = 'inline-block';
           w.style.whiteSpace = 'nowrap';
-          w.style.overflow   = 'hidden';
+          w.style.overflow = 'hidden';
           w.style.verticalAlign = 'bottom';
         });
         split.chars.forEach(c => {
-          c.style.display       = 'inline-block';
+          c.style.display = 'inline-block';
           c.style.verticalAlign = 'bottom';
         });
       });
@@ -131,13 +131,13 @@ const SplitPhotos = () => {
       /* ── CENTER BRAND: SplitType words+chars scrub reveal ── */
       splitBrand.current = new SplitType(brandRef.current, { types: 'words,chars' });
       splitBrand.current.words.forEach(w => {
-        w.style.display       = 'inline-block';
-        w.style.whiteSpace    = 'nowrap';
-        w.style.overflow      = 'hidden';
+        w.style.display = 'inline-block';
+        w.style.whiteSpace = 'nowrap';
+        w.style.overflow = 'hidden';
         w.style.verticalAlign = 'bottom';
       });
       splitBrand.current.chars.forEach(c => {
-        c.style.display       = 'inline-block';
+        c.style.display = 'inline-block';
         c.style.verticalAlign = 'bottom';
       });
       gsap.from(splitBrand.current.chars, {
@@ -188,7 +188,7 @@ const SplitPhotos = () => {
     <div ref={containerRef} className="sp-wrap">
 
       {/* Ambient glows */}
-      <div className="sp-glow sp-glow--left"  style={{ background: `radial-gradient(circle, ${team[0]?.color || '#38bdf8'}18 0%, transparent 70%)` }} />
+      <div className="sp-glow sp-glow--left" style={{ background: `radial-gradient(circle, ${team[0]?.color || '#38bdf8'}18 0%, transparent 70%)` }} />
       <div className="sp-glow sp-glow--right" style={{ background: `radial-gradient(circle, ${team[1]?.color || '#00d4ff'}18 0%, transparent 70%)` }} />
 
       {/* ── LEFT CARD ── */}
@@ -196,7 +196,7 @@ const SplitPhotos = () => {
         <div className="sp-img-wrap">
           <img
             ref={leftImgRef}
-            src={`${import.meta.env.BASE_URL}images/Vatsal.webp`}
+            src={`${import.meta.env.BASE_URL}${team[0]?.image}`}
             alt={team[0]?.name}
             className="sp-img"
           />
@@ -241,7 +241,7 @@ const SplitPhotos = () => {
         <div className="sp-img-wrap">
           <img
             ref={rightImgRef}
-            src={`${import.meta.env.BASE_URL}images/Mann.webp`}
+            src={`${import.meta.env.BASE_URL}${team[1]?.image}`}
             alt={team[1]?.name}
             className="sp-img"
           />

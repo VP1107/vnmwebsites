@@ -316,18 +316,23 @@ const WorkShowcase = () => {
 
                   {/* Center: image */}
                   <div className="ws-proj-img-wrap">
-                    <img
-                      className="ws-proj-img"
-                      src={project.image}
-                      alt={project.title}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    <div className="ws-proj-img-overlay" />
-                    <div className="ws-proj-scan" />
-                    {/* Corner brackets */}
-                    <span className="ws-corner ws-corner--tl" />
-                    <span className="ws-corner ws-corner--br" />
+                    <a
+                      href={project.link}
+                      target="_blank"
+                    >
+                      <img
+                        className="ws-proj-img"
+                        src={project.image}
+                        alt={project.title}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </a>
+                      <div className="ws-proj-img-overlay" />
+                      <div className="ws-proj-scan" />
+                      {/* Corner brackets */}
+                      <span className="ws-corner ws-corner--tl" />
+                      <span className="ws-corner ws-corner--br" />
                   </div>
 
                   {/* Right: content */}
@@ -342,8 +347,8 @@ const WorkShowcase = () => {
                     <p className="ws-proj-desc">{project.description}</p>
                     <a
                       href={project.link}
+                      target="_blank"
                       className="ws-proj-cta"
-                      onClick={e => e.preventDefault()}
                     >
                       <span className="ws-proj-cta-text">View Project</span>
                       <span className="ws-proj-cta-arrow">

@@ -307,9 +307,9 @@ const ServiceCard = ({ service, index, total }) => {
                         loop muted playsInline preload="none"
                         style={{
                             width: '100%', height: '100%', objectFit: 'cover',
-                            // filter: (isHovered || touch)
-                            //     ? 'brightness(0.72) saturate(1.15)'
-                            //     : 'brightness(0.4) saturate(0.65)',
+                            filter: (isHovered || touch)
+                                ? 'brightness(1) saturate(1.15)'
+                                : 'brightness(1) saturate(1)',
                             transition: 'filter 0.55s ease',
                             opacity: isLoaded ? 1 : 0,
                             willChange: 'filter',
@@ -443,7 +443,7 @@ const ServiceCard = ({ service, index, total }) => {
                         </p>
 
                         {/* CTA */}
-                        <div ref={ctaRef}>
+                        {/* <div ref={ctaRef}>
                             <button
                                 style={{
                                     padding: '14px 46px',
@@ -461,7 +461,7 @@ const ServiceCard = ({ service, index, total }) => {
                                     <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                                 </svg>
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>

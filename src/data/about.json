@@ -7,16 +7,16 @@
         {
             "id": "vatsal",
             "name": "VATSAL",
-            "role": "Frontend Dev",
-            "image": "images/responsive_mockup.webp",
+            "role": "Co-Founder",
+            "image": "images/Vatsal.webp",
             "color": "#38bdf8",
             "align": "left"
         },
         {
             "id": "mann",
             "name": "MANN",
-            "role": "UI Designer",
-            "image": "images/responsive_mockup.webp",
+            "role": "Co-Founder",
+            "image": "images/Mann.webp",
             "color": "#00d4ff",
             "align": "right"
         }
