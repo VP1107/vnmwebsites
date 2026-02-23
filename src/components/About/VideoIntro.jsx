@@ -18,18 +18,26 @@ const VideoIntro = () => {
 
   useEffect(() => {
     if (!containerRef.current) return;
-    const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia(containerRef);
+
+    mm.add({
+      isDesktop: "(min-width: 768px)",
+      isMobile: "(max-width: 767px)"
+    }, (context) => {
+      const { isDesktop } = context.conditions;
 
       /* ── PIN for 1× scroll height ── */
-      ScrollTrigger.create({
-        trigger: containerRef.current,
-        start: 'top top',
-        end: '+=100%',
-        pin: true,
-        pinSpacing: true,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-      });
+      if (isDesktop) {
+        ScrollTrigger.create({
+          trigger: containerRef.current,
+          start: 'top top',
+          end: '+=100%',
+          pin: true,
+          pinSpacing: true,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+        });
+      }
 
       /* ── LAYER 1: Video slow zoom-out ── */
       gsap.fromTo(bgLayerRef.current,
@@ -158,10 +166,10 @@ const VideoIntro = () => {
         }
       });
 
-    }, containerRef);
+    }); // end matchMedia
 
     return () => {
-      ctx.revert();
+      mm.revert();
       splitH.current?.revert();
       splitL.current?.revert();
     };

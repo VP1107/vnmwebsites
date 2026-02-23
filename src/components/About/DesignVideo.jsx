@@ -24,7 +24,14 @@ const DesignVideo = () => {
         const validLines = lineRefs.current.filter(Boolean);
         if (validLines.length === 0) return;
 
-        const ctx = gsap.context(() => {
+        const mm = gsap.matchMedia(containerRef);
+
+        mm.add({
+            isDesktop: "(min-width: 768px)",
+            isMobile: "(max-width: 767px)"
+        }, (context) => {
+            const { isDesktop } = context.conditions;
+
             // 1. Initial State: Hide all lines immediately
             gsap.set(validLines, { opacity: 0, y: 40, filter: 'blur(10px)' });
 
@@ -34,8 +41,8 @@ const DesignVideo = () => {
                     trigger: containerRef.current,
                     start: 'top top',
                     end: '+=150%',
-                    pin: true,
-                    pinSpacing: true,
+                    pin: isDesktop ? true : false,
+                    pinSpacing: isDesktop ? true : false,
                     scrub: 1, // Smooth scrubbing for text
                     anticipatePin: 1,
                     invalidateOnRefresh: true,
@@ -135,9 +142,9 @@ const DesignVideo = () => {
                 }
             });
 
-        }, containerRef); // Scope to container
+        }); // end matchMedia
 
-        return () => ctx.revert();
+        return () => mm.revert();
     }, []);
 
     return (

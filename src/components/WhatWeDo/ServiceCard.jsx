@@ -45,26 +45,35 @@ const ServiceCard = ({ service, index, total }) => {
         cxSet.current = gsap.quickTo(tiltWrapRef.current, 'x', { duration: 0.55, ease: 'power2.out' });
         cySet.current = gsap.quickTo(tiltWrapRef.current, 'y', { duration: 0.55, ease: 'power2.out' });
 
-        const ctx = gsap.context(() => {
+        const mm = gsap.matchMedia(wrapRef);
+
+        mm.add({
+            isDesktop: "(min-width: 768px)",
+            isMobile: "(max-width: 767px)"
+        }, (context) => {
+            const { isDesktop } = context.conditions;
             if (!cardRef.current || !progressRef.current || !bgLayerRef.current || !midLayerRef.current) return;
 
             /* 1 ── PIN (scroll-stack) */
-            ScrollTrigger.create({
-                trigger: cardRef.current,
-                start: 'top top',
-                end: '+=60%',
-                pin: true,
-                pinSpacing: true,
-                anticipatePin: 1,
-                invalidateOnRefresh: true,
-            });
+            if (isDesktop) {
+                ScrollTrigger.create({
+                    trigger: cardRef.current,
+                    start: 'top top',
+                    end: '+=60%',
+                    pin: true,
+                    pinSpacing: true,
+                    anticipatePin: 1,
+                    invalidateOnRefresh: true,
+                });
+            }
 
             /* 2 ── SCRUB PROGRESS BAR */
             gsap.to(progressRef.current, {
                 scaleX: 1, ease: 'none',
                 scrollTrigger: {
                     trigger: cardRef.current,
-                    start: 'top top', end: '+=60%',
+                    start: 'top top',
+                    end: isDesktop ? '+=60%' : 'bottom top',
                     scrub: 0, invalidateOnRefresh: true,
                 }
             });
@@ -199,10 +208,10 @@ const ServiceCard = ({ service, index, total }) => {
                 }
             });
 
-        }, wrapRef);
+        }); // end matchMedia
 
         return () => {
-            ctx.revert();
+            mm.revert();
             splitTitle.current?.revert();
             splitSub.current?.revert();
         };
