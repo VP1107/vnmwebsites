@@ -265,6 +265,24 @@
     width: 100%;
 }
 
+/* ── Validation error state ── */
+.field-wrap.has-error {
+    border-color: rgba(248, 113, 113, 0.6);
+}
+
+.field-wrap.has-error .field-label {
+    color: rgba(248, 113, 113, 0.8);
+}
+
+.field-error {
+    display: block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: rgba(248, 113, 113, 0.85);
+    letter-spacing: 0.03em;
+    margin-top: 4px;
+}
+
 /* ── Submit row ── */
 .submit-row {
     margin-top: 40px;

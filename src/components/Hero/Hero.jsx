@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import './Hero.css';
 import HeroContent from './HeroContent';
-import { gsap, ScrollTrigger } from '../../gsap-config';
+import {gsap, ScrollTrigger } from '../../gsap-config';
 
 
 // ── Particle system ───────────────────────────────────────────────────────────
@@ -261,10 +261,10 @@ const Hero = ({ startAnimation = false }) => {
             }}
         >
             {/* Particle canvas */}
-            <canvas ref={canvasRef} className="hero__canvas" />
+            <canvas ref={canvasRef} className="hero__canvas" aria-hidden="true" />
 
             {/* Light Streaks canvas - Changed class name */}
-            <canvas ref={streaksCanvasRef} className="hero__streaks hero__rings" />
+            <canvas ref={streaksCanvasRef} className="hero__streaks hero__rings" aria-hidden="true" />
 
             {/* Scanline texture */}
             <div className="hero__scanlines" aria-hidden="true" />

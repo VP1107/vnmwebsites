@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { gsap, ScrollTrigger } from '../../gsap-config';
+import { gsap } from '../../gsap-config';
 import SplitType from 'split-type';
 
 
@@ -22,6 +22,7 @@ const PricingTeaser = () => {
         // FIX #2: Removed unused `counter` object entirely.
 
         const ctx = gsap.context(() => {
+            if (!containerRef.current || !bgGlowRef.current || !gridRef.current || !labelRef.current || !lineRef.current || !priceRef.current || !subtitleRef.current || !ctaRef.current) return;
 
             /* 1 ── PARALLAX: bg glow drifts upward as section enters
                FIX #4: Removed `transform: translateX(-50%)` from the inline style
@@ -91,7 +92,7 @@ const PricingTeaser = () => {
             /* 5 ── PRICE COUNTER: scrub-linked from 0 → 8000 using Proxy Object for robustness */
             const priceProxy = { val: 0 };
             gsap.to(priceProxy, {
-                val: 8000,
+                val: 7999,
                 ease: 'none',
                 scrollTrigger: {
                     trigger: containerRef.current,
@@ -101,7 +102,7 @@ const PricingTeaser = () => {
                 },
                 onUpdate: () => {
                     if (priceRef.current) {
-                        priceRef.current.textContent = '₹0' + Math.round(priceProxy.val).toLocaleString('en-IN');
+                        priceRef.current.textContent = '₹' + Math.round(priceProxy.val).toLocaleString('en-IN');
                     }
                 }
             });
@@ -121,7 +122,7 @@ const PricingTeaser = () => {
 
             /* 7 ── SUBTITLE fade */
             gsap.to(priceProxy, {
-                val: 8000,
+                val: 7999,
                 ease: 'none',
                 scrollTrigger: {
                     trigger: containerRef.current,

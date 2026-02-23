@@ -7,12 +7,12 @@ import { gsap, ScrollTrigger } from '../../gsap-config';
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbySOrWyHvsRLY525xpzXYX7YX2AaNeB2FbeTaSXABGDPPxnoNwDH1ozzLgnRR0_h8wdWw/exec";
 
 // ── Field component — CSS handles label float, no GSAP on labels ──────────────
-const Field = ({ id, label, type = 'text', rows, required, value, onChange }) => {
+const Field = ({ id, label, type = 'text', rows, required, value, onChange, error }) => {
     const [focused, setFocused] = useState(false);
     const isTextarea = type === 'textarea';
 
     return (
-        <div className={`field-wrap${focused ? ' is-focused' : ''}${value ? ' has-value' : ''}`}>
+        <div className={`field-wrap${focused ? ' is-focused' : ''}${value ? ' has-value' : ''}${error ? ' has-error' : ''}`}>
             <label htmlFor={id} className="field-label">{label}</label>
 
             {isTextarea ? (
@@ -26,6 +26,7 @@ const Field = ({ id, label, type = 'text', rows, required, value, onChange }) =>
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
                     aria-label={label}
+                    aria-describedby={error ? `${id}-error` : undefined}
                 />
             ) : (
                 <input
@@ -38,11 +39,13 @@ const Field = ({ id, label, type = 'text', rows, required, value, onChange }) =>
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
                     aria-label={label}
+                    aria-describedby={error ? `${id}-error` : undefined}
                 />
             )}
 
             {/* Cyan scan line grows on focus via CSS */}
             <span className="field-scan" aria-hidden="true" />
+            {error && <span id={`${id}-error`} className="field-error" role="alert">{error}</span>}
         </div>
     );
 };
@@ -56,6 +59,7 @@ const ContactForm = () => {
     const successRef = useRef(null);
 
     const [fields, setFields] = useState({ name: '', email: '', phone: '', message: '' });
+    const [errors, setErrors] = useState({});
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
     const [charCount, setCharCount] = useState(0);
@@ -100,12 +104,34 @@ const ContactForm = () => {
     const handleChange = (key) => (e) => {
         setFields(f => ({ ...f, [key]: e.target.value }));
         if (key === 'message') setCharCount(e.target.value.length);
+        // Clear error for the field being edited
+        if (errors[key]) setErrors(prev => ({ ...prev, [key]: '' }));
+    };
+
+    // ── Validation ───────────────────────────────────────────────────────────
+    const validate = () => {
+        const newErrors = {};
+        if (!fields.name.trim()) newErrors.name = 'Name is required.';
+        if (!fields.email.trim()) {
+            newErrors.email = 'Email is required.';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.trim())) {
+            newErrors.email = 'Please enter a valid email address.';
+        }
+        if (!fields.message.trim()) newErrors.message = 'Message is required.';
+        return newErrors;
     };
 
     // ── Submit ────────────────────────────────────────────────────────────────
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (sending || sent) return;
+
+        const validationErrors = validate();
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
+        setErrors({});
         setSending(true);
 
         const btn = submitBtnRef.current;
@@ -254,6 +280,7 @@ const ContactForm = () => {
                             value={fields.name}
                             onChange={handleChange('name')}
                             required
+                            error={errors.name}
                         />
                         <Field
                             id="cf-email"
@@ -262,6 +289,7 @@ const ContactForm = () => {
                             value={fields.email}
                             onChange={handleChange('email')}
                             required
+                            error={errors.email}
                         />
                         <Field
                             id="cf-phone"
@@ -278,6 +306,7 @@ const ContactForm = () => {
                             value={fields.message}
                             onChange={handleChange('message')}
                             required
+                            error={errors.message}
                         />
 
                         <div className="submit-row">

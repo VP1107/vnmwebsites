@@ -46,12 +46,13 @@ const ServiceCard = ({ service, index, total }) => {
         cySet.current = gsap.quickTo(tiltWrapRef.current, 'y', { duration: 0.55, ease: 'power2.out' });
 
         const ctx = gsap.context(() => {
+            if (!cardRef.current || !progressRef.current || !bgLayerRef.current || !midLayerRef.current) return;
 
             /* 1 ── PIN (scroll-stack) */
             ScrollTrigger.create({
                 trigger: cardRef.current,
                 start: 'top top',
-                end: '+=90%',
+                end: '+=60%',
                 pin: true,
                 pinSpacing: true,
                 anticipatePin: 1,
@@ -63,7 +64,7 @@ const ServiceCard = ({ service, index, total }) => {
                 scaleX: 1, ease: 'none',
                 scrollTrigger: {
                     trigger: cardRef.current,
-                    start: 'top top', end: '+=90%',
+                    start: 'top top', end: '+=60%',
                     scrub: 0, invalidateOnRefresh: true,
                 }
             });
@@ -137,31 +138,35 @@ const ServiceCard = ({ service, index, total }) => {
             // FIX #1: Changed opacity from 1 to 0 so the fade-in actually works.
             if (subtitleRef.current) {
                 splitSub.current = new SplitType(subtitleRef.current, { types: 'chars' });
-                gsap.from(splitSub.current.chars, {
-                    opacity: 0, y: 18, stagger: 0.02, duration: 0.5, ease: 'power2.out',
-                    scrollTrigger: {
-                        trigger: cardRef.current, start: 'top 70%',
-                        toggleActions: 'play none none reverse', invalidateOnRefresh: true,
-                    }
-                });
+                if (splitSub.current.chars && splitSub.current.chars.length > 0) {
+                    gsap.from(splitSub.current.chars, {
+                        opacity: 0, y: 18, stagger: 0.02, duration: 0.5, ease: 'power2.out',
+                        scrollTrigger: {
+                            trigger: cardRef.current, start: 'top 70%',
+                            toggleActions: 'play none none reverse', invalidateOnRefresh: true,
+                        }
+                    });
+                }
             }
 
             /* 9 ── SPLITTYPE: title chars scrub-clip reveal */
             if (titleRef.current) {
                 splitTitle.current = new SplitType(titleRef.current, { types: 'chars' });
-                splitTitle.current.chars.forEach(char => {
-                    char.style.display = 'inline-block';
-                    char.style.overflow = 'hidden';
-                    char.style.verticalAlign = 'bottom';
-                });
-                gsap.from(splitTitle.current.chars, {
-                    y: '110%', opacity: 0, stagger: 0.014, ease: 'none',
-                    scrollTrigger: {
-                        trigger: cardRef.current,
-                        start: 'top 68%', end: 'top 10%',
-                        scrub: 0.9, invalidateOnRefresh: true,
-                    }
-                });
+                if (splitTitle.current.chars && splitTitle.current.chars.length > 0) {
+                    splitTitle.current.chars.forEach(char => {
+                        char.style.display = 'inline-block';
+                        char.style.overflow = 'hidden';
+                        char.style.verticalAlign = 'bottom';
+                    });
+                    gsap.from(splitTitle.current.chars, {
+                        y: '110%', opacity: 0, stagger: 0.014, ease: 'none',
+                        scrollTrigger: {
+                            trigger: cardRef.current,
+                            start: 'top 68%', end: 'top 10%',
+                            scrub: 0.9, invalidateOnRefresh: true,
+                        }
+                    });
+                }
             }
 
             /* 10 ── DESCRIPTION fade up (toggle) */
@@ -174,17 +179,19 @@ const ServiceCard = ({ service, index, total }) => {
             });
 
             /* 11 ── CTA slide up (toggle) */
-            gsap.from(ctaRef.current, {
-                opacity: 0, y: 24, duration: 0.8, ease: 'power3.out', delay: 0.1,
-                scrollTrigger: {
-                    trigger: cardRef.current, start: 'top 58%',
-                    toggleActions: 'play none none reverse', invalidateOnRefresh: true,
-                }
-            });
+            if (ctaRef.current) {
+                gsap.from(ctaRef.current, {
+                    opacity: 0, y: 24, duration: 0.8, ease: 'power3.out', delay: 0.1,
+                    scrollTrigger: {
+                        trigger: cardRef.current, start: 'top 58%',
+                        toggleActions: 'play none none reverse', invalidateOnRefresh: true,
+                    }
+                });
+            }
 
             /* 12 ── EXIT: scale shrink & push up */
             gsap.to(cardRef.current, {
-                y: -130, scale: 0.93, opacity: 0.28,
+                y: -60, scale: 0.93, opacity: 0.6,
                 scrollTrigger: {
                     trigger: cardRef.current,
                     start: 'bottom bottom', end: 'bottom top',

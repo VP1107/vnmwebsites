@@ -5,21 +5,22 @@ import CustomCursor from './components/UI/CustomCursor';
 import ErrorBoundary from './components/UI/ErrorBoundary';
 import ScrollWrapper from './components/UI/ScrollWrapper';
 import Preloader from './components/UI/Preloader';
+import ScrollProgress from './components/UI/ScrollProgress';
 import './styles/global.css';
 import './styles/animations.css';
 
-const Navigation      = lazy(() => import('./components/UI/Navigation'));
-const ScrollToTop     = lazy(() => import('./components/UI/ScrollToTop'));
-const AboutSection    = lazy(() => import('./components/About/AboutSection'));
-const WorkShowcase    = lazy(() => import('./components/WorkShowcase/WorkShowcase'));
+const Navigation = lazy(() => import('./components/UI/Navigation'));
+const ScrollToTop = lazy(() => import('./components/UI/ScrollToTop'));
+const AboutSection = lazy(() => import('./components/About/AboutSection'));
+const WorkShowcase = lazy(() => import('./components/WorkShowcase/WorkShowcase'));
 const TechStackShowcase = lazy(() => import('./components/TechStack/TechStackShowcase'));
-const WhatWeDo        = lazy(() => import('./components/WhatWeDo/WhatWeDo'));
-const ContactForm     = lazy(() => import('./components/Contact/ContactForm'));
-const Footer          = lazy(() => import('./components/Footer/Footer'));
+const WhatWeDo = lazy(() => import('./components/WhatWeDo/WhatWeDo'));
+const ContactForm = lazy(() => import('./components/Contact/ContactForm'));
+const Footer = lazy(() => import('./components/Footer/Footer'));
 
 function App() {
-    const [isLoading, setIsLoading]     = useState(true);
-    const [startHero, setStartHero]     = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [startHero, setStartHero] = useState(false);
     const [showSections, setShowSections] = useState(false);
 
     useEffect(() => {
@@ -57,6 +58,7 @@ function App() {
 
             {!isLoading && (
                 <>
+                    <ScrollProgress />
                     <CustomCursor />
                     <Suspense fallback={null}>
                         <Navigation />

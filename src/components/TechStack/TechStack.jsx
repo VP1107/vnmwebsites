@@ -33,7 +33,7 @@ const TechStack = () => {
 
   // ✅ GSAP scroll animations only run when visible
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || !sectionRef.current || !labelRef.current || !headingRef.current || !containerRef.current) return;
 
     const ctx = gsap.context(() => {
       /* Label + heading slide up */

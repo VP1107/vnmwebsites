@@ -1,8 +1,6 @@
 import { useRef, useEffect } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger } from '../../gsap-config';
 
-gsap.registerPlugin(ScrollTrigger);
 
 const lines = [
     { text: 'First-year students.', accent: false },
@@ -21,16 +19,21 @@ const DesignVideo = () => {
     const lineRefs = useRef([]);
 
     useEffect(() => {
+        if (!containerRef.current || !bgLayerRef.current || !gridRef.current || !overlayRef.current || !progressRef.current) return;
+
+        const validLines = lineRefs.current.filter(Boolean);
+        if (validLines.length === 0) return;
+
         const ctx = gsap.context(() => {
             // 1. Initial State: Hide all lines immediately
-            gsap.set(lineRefs.current, { opacity: 0, y: 40, filter: 'blur(10px)' });
+            gsap.set(validLines, { opacity: 0, y: 40, filter: 'blur(10px)' });
 
             // 2. Main Timeline: Pins the section and orchestrates the lines
             const tl = gsap.timeline({
                 scrollTrigger: {
                     trigger: containerRef.current,
                     start: 'top top',
-                    end: '+=300%',
+                    end: '+=150%',
                     pin: true,
                     pinSpacing: true,
                     scrub: 1, // Smooth scrubbing for text
@@ -46,10 +49,6 @@ const DesignVideo = () => {
             lines.forEach((_, i) => {
                 const el = lineRefs.current[i];
                 if (!el) return;
-
-                // Determine sequencing
-                // We want overlap? No, sequential.
-                // We can just chain them.
 
                 // In
                 tl.to(el, {
@@ -86,7 +85,7 @@ const DesignVideo = () => {
                     scrollTrigger: {
                         trigger: containerRef.current,
                         start: 'top top',
-                        end: '+=400%',
+                        end: '+=200%',
                         scrub: 2.5, // Different smoothness for depth feel
                         invalidateOnRefresh: true,
                     }
@@ -103,7 +102,7 @@ const DesignVideo = () => {
                     scrollTrigger: {
                         trigger: containerRef.current,
                         start: 'top top',
-                        end: '+=400%',
+                        end: '+=200%',
                         scrub: 3,
                         invalidateOnRefresh: true,
                     }
@@ -117,7 +116,7 @@ const DesignVideo = () => {
                 scrollTrigger: {
                     trigger: containerRef.current,
                     start: 'top top',
-                    end: '+=200%', // Fades in faster
+                    end: '+=100%', // Fades in faster
                     scrub: 1,
                     invalidateOnRefresh: true,
                 }
@@ -130,7 +129,7 @@ const DesignVideo = () => {
                 scrollTrigger: {
                     trigger: containerRef.current,
                     start: 'top top',
-                    end: '+=400%',
+                    end: '+=200%',
                     scrub: 0,
                     invalidateOnRefresh: true,
                 }

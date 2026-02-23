@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { gsap, ScrollTrigger } from '../../gsap-config';
+import { gsap } from '../../gsap-config';
 import SplitType from 'split-type';
 
 const SectionIntro = () => {
@@ -12,6 +12,8 @@ const SectionIntro = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      if (!containerRef.current || !labelRef.current || !lineRef.current || !titleRef.current || !subtitleRef.current) return;
+
       gsap.from(labelRef.current, {
         opacity: 0, x: -24, duration: 0.8, ease: 'power3.out',
         scrollTrigger: { trigger: containerRef.current, start: 'top 82%' }
@@ -24,23 +26,28 @@ const SectionIntro = () => {
 
       splitRef.current = new SplitType(titleRef.current, { types: 'words,chars' });
       const chars = splitRef.current.chars;
-      splitRef.current.words.forEach(w => {
-        w.style.display       = 'inline-block';
-        w.style.whiteSpace    = 'nowrap';
-        w.style.overflow      = 'hidden';
-        w.style.verticalAlign = 'bottom';
-      });
-      chars.forEach(c => {
-        c.style.display       = 'inline-block';
-        c.style.verticalAlign = 'bottom';
-      });
+      if (splitRef.current.words) {
+        splitRef.current.words.forEach(w => {
+          w.style.display = 'inline-block';
+          w.style.whiteSpace = 'nowrap';
+          w.style.overflow = 'hidden';
+          w.style.verticalAlign = 'bottom';
+        });
+      }
 
-      gsap.from(chars, {
-        y: 90, opacity: 0, rotateX: -70,
-        transformOrigin: 'top center',
-        stagger: 0.022, duration: 0.85, ease: 'back.out(1.8)', delay: 0.2,
-        scrollTrigger: { trigger: containerRef.current, start: 'top 80%', toggleActions: 'play none none none' }
-      });
+      if (chars && chars.length > 0) {
+        chars.forEach(c => {
+          c.style.display = 'inline-block';
+          c.style.verticalAlign = 'bottom';
+        });
+
+        gsap.from(chars, {
+          y: 90, opacity: 0, rotateX: -70,
+          transformOrigin: 'top center',
+          stagger: 0.022, duration: 0.85, ease: 'back.out(1.8)', delay: 0.2,
+          scrollTrigger: { trigger: containerRef.current, start: 'top 80%', toggleActions: 'play none none none' }
+        });
+      }
 
       gsap.from(subtitleRef.current, {
         opacity: 0, y: 30, duration: 0.9, ease: 'power3.out', delay: 0.55,

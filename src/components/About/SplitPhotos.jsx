@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 import SplitType from 'split-type';
 import aboutData from '../../data/about.json';
-import { gsap } from '../../gsap-config';
+import { gsap} from '../../gsap-config';
 
 const SplitPhotos = () => {
   const containerRef = useRef(null);

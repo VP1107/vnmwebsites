@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
 import SplitType from 'split-type';
-import { gsap, ScrollTrigger} from '../../gsap-config';
+import { gsap} from '../../gsap-config';
 
 const FinalCTA = () => {
   const containerRef = useRef(null);

@@ -9,7 +9,8 @@ const CustomCursor = () => {
         const cursor = cursorRef.current;
         const follower = followerRef.current;
 
-        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        const isStrictTouch = ('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.matchMedia('(pointer: coarse)').matches;
+        if (isStrictTouch) {
             if (cursor) cursor.style.display = 'none';
             if (follower) follower.style.display = 'none';
             return;
@@ -26,15 +27,19 @@ const CustomCursor = () => {
         let followerY = window.innerHeight / 2;
         let rafId;
 
+        let hasMoved = false;
+
         const moveCursor = (e) => {
+            if (!hasMoved) {
+                hasMoved = true;
+                if (cursor) cursor.style.opacity = '1';
+                if (follower) follower.style.opacity = '0.5';
+            }
             mouseX = e.clientX;
             mouseY = e.clientY;
 
             setCursorX(mouseX);
             setCursorY(mouseY);
-
-            if (cursor) cursor.style.opacity = '1';
-            if (follower) follower.style.opacity = '0.5';
         };
 
         const followCursor = () => {
@@ -47,8 +52,7 @@ const CustomCursor = () => {
             rafId = requestAnimationFrame(followCursor);
         };
 
-        if (cursor) cursor.style.opacity = '1';
-        if (follower) follower.style.opacity = '0.5';
+        // Initial opacity remains 0 until first mouse move to prevent it sitting in the center.
 
         followCursor();
         window.addEventListener('mousemove', moveCursor, { passive: true });
