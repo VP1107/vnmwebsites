@@ -9,10 +9,9 @@ function initParticles(canvas) {
     const ctx = canvas.getContext('2d');
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let W, H, particles, isRunning = true;
-    // BUG FIX: Track rafId with an object so the IntersectionObserver closure
-    // always reads the latest value. A plain `let rafId` in a closure gets
-    // stale after cancelAnimationFrame — the old integer is not null/undefined,
-    // so the "restart if rafId === null" check never fires again.
+    // BUG FIX: Track rafId in an object so the IntersectionObserver closure
+    // always reads the live value. After cancelAnimationFrame the old integer
+    // is NOT null, so plain `rafId === null` never fires the restart branch.
     const raf = { id: null };
 
     function resize() {
@@ -65,9 +64,6 @@ function initParticles(canvas) {
 
     const observer = new IntersectionObserver(([entry]) => {
         isRunning = entry.isIntersecting;
-        // BUG FIX: Check raf.id instead of the old local rafId variable.
-        // After cancelAnimationFrame the old integer is NOT null/undefined,
-        // so raf.id is set to null explicitly in draw() when stopping.
         if (isRunning && raf.id === null) draw();
     }, { threshold: 0.1 });
     observer.observe(canvas);
@@ -86,7 +82,6 @@ function initLightStreaks(canvas) {
     const ctx = canvas.getContext('2d');
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     let W, H, streaks = [], isRunning = true;
-    // BUG FIX: Same rafId tracking fix as initParticles above.
     const raf = { id: null };
 
     function resize() {
@@ -132,8 +127,8 @@ function initLightStreaks(canvas) {
             s.life++;
 
             let currentAlpha = s.alpha;
-            if (s.life < 10)                    currentAlpha = s.alpha * (s.life / 10);
-            if (s.life > s.maxLife - 10)        currentAlpha = s.alpha * ((s.maxLife - s.life) / 10);
+            if (s.life < 10)             currentAlpha = s.alpha * (s.life / 10);
+            if (s.life > s.maxLife - 10) currentAlpha = s.alpha * ((s.maxLife - s.life) / 10);
 
             const startX = s.speed > 0 ? s.x - s.length : s.x;
             const tailX  = s.x - s.length * (s.speed > 0 ? 1 : -1);
@@ -164,7 +159,6 @@ function initLightStreaks(canvas) {
 
     const observer = new IntersectionObserver(([entry]) => {
         isRunning = entry.isIntersecting;
-        // BUG FIX: Same fix — raf.id is explicitly nulled when the loop stops.
         if (isRunning && raf.id === null) draw();
     }, { threshold: 0.1 });
     observer.observe(canvas);
@@ -185,19 +179,34 @@ const Hero = ({ startAnimation = false }) => {
     const heroRef          = useRef(null);
     const canvasRef        = useRef(null);
     const streaksCanvasRef = useRef(null);
-    // Store direct refs to child elements so the scroll onUpdate
-    // does not call querySelector() on every frame (expensive).
-    const contentWrapRef   = useRef(null);
-    const canvasElRef      = useRef(null);    // same as canvasRef but aliased for clarity
-    const streaksElRef     = useRef(null);    // same as streaksCanvasRef
+    const canvasElRef      = useRef(null);
+    const streaksElRef     = useRef(null);
     const scanlinesRef     = useRef(null);
     const cornerRefs       = useRef([]);
     const ctxRef           = useRef(null);
+
+    // FIX — Hero content ref strategy:
+    // HeroContent renders its own .hero-content-wrapper and positions itself
+    // absolutely. Wrapping it in an extra div (as a previous version did) creates
+    // a 0-height flow container inside overflow:hidden — the absolute child gets
+    // clipped and the GSAP y-transform has no visual effect on it.
+    //
+    // Solution: do a single querySelector ONCE after mount to cache the reference.
+    // This avoids the performance problem (querySelector every frame) AND the
+    // layout problem (extra wrapper div clipping the content).
+    const contentWrapRef = useRef(null);
+
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
         if (startAnimation && !isLoaded) setIsLoaded(true);
     }, [startAnimation, isLoaded]);
+
+    // Cache the HeroContent wrapper element once after mount
+    useEffect(() => {
+        if (!heroRef.current) return;
+        contentWrapRef.current = heroRef.current.querySelector('.hero-content-wrapper');
+    }, []);
 
     // Particle canvas
     useEffect(() => {
@@ -215,6 +224,9 @@ const Hero = ({ startAnimation = false }) => {
     useEffect(() => {
         if (!heroRef.current || !isLoaded) return;
 
+        // Re-cache in case HeroContent rendered after initial mount
+        contentWrapRef.current = heroRef.current.querySelector('.hero-content-wrapper');
+
         const timer = setTimeout(() => {
             const mm = gsap.matchMedia(heroRef);
 
@@ -227,13 +239,11 @@ const Hero = ({ startAnimation = false }) => {
                 (context) => {
                     const { isDesktop, isTablet, isMobile } = context.conditions;
 
-                    // ── Responsive scroll destruction values ──────────────
-                    // On mobile the section scrolls naturally (not pinned) so
-                    // the content fade needs to be gentler or it disappears
-                    // too fast before the user has read it.
-                    const contentFadeMultiplier = isMobile ? 1.1 : 1.5;
-                    const streaksFadeMultiplier = isMobile ? 1.2 : 1.8;
-                    const contentYTravel        = isMobile ? 50  : isTablet ? 75 : 100;
+                    // Gentler on mobile — section scrolls naturally so content
+                    // would vanish before the user finishes reading at full speed.
+                    const contentFadeMultiplier = isMobile ? 1.1  : isTablet ? 1.3 : 1.5;
+                    const streaksFadeMultiplier = isMobile ? 1.2  : isTablet ? 1.5 : 1.8;
+                    const contentYTravel        = isMobile ? 50   : isTablet ? 75  : 100;
 
                     ScrollTrigger.create({
                         trigger: heroRef.current,
@@ -241,33 +251,24 @@ const Hero = ({ startAnimation = false }) => {
                         end: 'bottom top',
                         scrub: 1,
                         onUpdate: (self) => {
-                            const progress = self.progress;
+                            const p = self.progress;
                             if (!heroRef.current) return;
 
-                            // BUG FIX: Use stored refs instead of querySelector()
-                            // on every frame. querySelector causes style/layout
-                            // recalculations each call which tanks scroll performance.
+                            // All targets are pre-cached refs — zero querySelector calls per frame
                             if (contentWrapRef.current) {
                                 gsap.set(contentWrapRef.current, {
-                                    opacity: 1 - progress * contentFadeMultiplier,
-                                    y: -contentYTravel * progress,
+                                    opacity: Math.max(0, 1 - p * contentFadeMultiplier),
+                                    y: -contentYTravel * p,
                                 });
                             }
-                            if (canvasElRef.current) {
-                                gsap.set(canvasElRef.current, {
-                                    opacity: 0.6 * (1 - progress),
-                                });
-                            }
-                            if (streaksElRef.current) {
-                                gsap.set(streaksElRef.current, {
-                                    opacity: 1 - progress * streaksFadeMultiplier,
-                                });
-                            }
-                            if (scanlinesRef.current) {
-                                gsap.set(scanlinesRef.current, { opacity: 1 - progress });
-                            }
+                            if (canvasElRef.current)
+                                gsap.set(canvasElRef.current,  { opacity: Math.max(0, 0.6 * (1 - p)) });
+                            if (streaksElRef.current)
+                                gsap.set(streaksElRef.current, { opacity: Math.max(0, 1 - p * streaksFadeMultiplier) });
+                            if (scanlinesRef.current)
+                                gsap.set(scanlinesRef.current, { opacity: Math.max(0, 1 - p) });
                             cornerRefs.current.forEach(c => {
-                                if (c) gsap.set(c, { opacity: 0.5 * (1 - progress) });
+                                if (c) gsap.set(c, { opacity: Math.max(0, 0.5 * (1 - p)) });
                             });
                         },
                     });
@@ -296,18 +297,13 @@ const Hero = ({ startAnimation = false }) => {
             }}
         >
             {/* Particle canvas */}
-            {/* BUG FIX: ref forwarded to canvasElRef for use in scroll onUpdate */}
             <canvas
                 ref={el => { canvasRef.current = el; canvasElRef.current = el; }}
                 className="hero__canvas"
                 aria-hidden="true"
             />
 
-            {/* Light Streaks canvas */}
-            {/* BUG FIX: Removed stale leftover class `hero__rings` — that class
-                was from the old pulse-rings implementation and no longer applies.
-                The selector used in onUpdate has been updated to use a ref so
-                the class name doesn't matter for GSAP targeting. */}
+            {/* Light Streaks canvas — hero__rings removed (stale rename remnant) */}
             <canvas
                 ref={el => { streaksCanvasRef.current = el; streaksElRef.current = el; }}
                 className="hero__streaks"
@@ -317,19 +313,15 @@ const Hero = ({ startAnimation = false }) => {
             {/* Scanline texture */}
             <div ref={scanlinesRef} className="hero__scanlines" aria-hidden="true" />
 
-            {/* Corner brackets */}
-            {/* BUG FIX: Collect corners into a ref array instead of querySelectorAll */}
+            {/* Corner brackets — stored in ref array, no querySelectorAll needed */}
             <div ref={el => cornerRefs.current[0] = el} className="hero__corner hero__corner--tl" aria-hidden="true" />
             <div ref={el => cornerRefs.current[1] = el} className="hero__corner hero__corner--tr" aria-hidden="true" />
             <div ref={el => cornerRefs.current[2] = el} className="hero__corner hero__corner--bl" aria-hidden="true" />
             <div ref={el => cornerRefs.current[3] = el} className="hero__corner hero__corner--br" aria-hidden="true" />
 
-            {/* Content — ref forwarded so scroll onUpdate can target it */}
-            {/* BUG FIX: contentWrapRef targets the wrapper div directly instead
-                of querying for '.hero-content-wrapper' on every scroll frame. */}
-            <div ref={contentWrapRef} className="hero-content-wrapper">
-                <HeroContent isLoaded={isLoaded} />
-            </div>
+            {/* HeroContent renders its own absolute-positioned .hero-content-wrapper.
+                DO NOT wrap in a div — see contentWrapRef comment above. */}
+            <HeroContent isLoaded={isLoaded} />
         </section>
     );
 };

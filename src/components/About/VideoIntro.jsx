@@ -52,6 +52,8 @@ const VideoIntro = () => {
         }
 
         // ── LAYER 1: Video slow zoom-out ───────────────────────────────────
+        // FIX: Use 'top bottom' / 'bottom top' so the parallax covers the full
+        // natural scroll travel of the section, not just while pinned.
         gsap.fromTo(
           bgLayerRef.current,
           { scale: isMobile ? 1.15 : 1.3 },
@@ -60,8 +62,8 @@ const VideoIntro = () => {
             ease: 'none',
             scrollTrigger: {
               trigger: containerRef.current,
-              start: 'top top',
-              end: '+=100%',
+              start: 'top bottom',
+              end: 'bottom top',
               scrub: scrubSpeed,
               invalidateOnRefresh: true,
             },
@@ -69,22 +71,24 @@ const VideoIntro = () => {
         );
 
         // ── LAYER 2: Grid drifts upward ────────────────────────────────────
-        gsap.fromTo(
-          gridRef.current,
-          { yPercent: isMobile ? 12 : 22, opacity: 0 },
-          {
-            yPercent: isMobile ? -12 : -22,
-            opacity: gridOpacity,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: containerRef.current,
-              start: 'top top',
-              end: '+=100%',
-              scrub: 2.8,
-              invalidateOnRefresh: true,
-            },
-          }
-        );
+        // FIX: Don't use opacity:0 as the fromTo "from" state for background
+        // layers. On mobile (no pin), if 'top top' is already past when GSAP
+        // initialises, the scrub progress starts at >0 and the element can be
+        // stuck invisible. Instead, set initial state and animate to final state
+        // so the element is always at least partially visible from the start.
+        gsap.set(gridRef.current, { yPercent: isMobile ? 12 : 22, opacity: isMobile ? 0.2 : 0 });
+        gsap.to(gridRef.current, {
+          yPercent: isMobile ? -12 : -22,
+          opacity: gridOpacity,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top bottom',   // FIX: start when section enters viewport,
+            end: 'bottom top',     // not 'top top' which can already be past
+            scrub: 2.8,
+            invalidateOnRefresh: true,
+          },
+        });
 
         // ── OVERLAY lightens mid-scroll ────────────────────────────────────
         gsap.fromTo(

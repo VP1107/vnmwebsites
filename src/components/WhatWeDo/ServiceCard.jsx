@@ -87,14 +87,21 @@ const ServiceCard = ({ service, index, total }) => {
                 const ctaStart     = isMobile ? 'top 74%' : 'top 58%';
 
                 // 1 ── PIN (scroll-stack) ───────────────────────────────────
+                // BUG FIX: refreshPriority ensures pins are processed in DOM
+                // order (highest index = first in page = highest priority).
+                // Without this, card 2's ScrollTrigger calculates its start
+                // position BEFORE card 1's pinSpacing div is inserted, so its
+                // trigger fires at the wrong scroll position and animations
+                // appear to never run.
                 if (pinSection) {
                     ScrollTrigger.create({
-                        trigger: cardRef.current,
-                        start: 'top top',
-                        end: '+=60%',
-                        pin: true,
-                        pinSpacing: true,
-                        anticipatePin: 1,
+                        trigger:         cardRef.current,
+                        start:           'top top',
+                        end:             '+=60%',
+                        pin:             true,
+                        pinSpacing:      true,
+                        anticipatePin:   1,
+                        refreshPriority: -index,  // card 0 = priority 0 (highest), card 3 = -3
                         invalidateOnRefresh: true,
                     });
                 }
@@ -131,22 +138,21 @@ const ServiceCard = ({ service, index, total }) => {
                 );
 
                 // 4 ── MID LAYER PARALLAX ───────────────────────────────────
-                gsap.fromTo(
-                    midLayerRef.current,
-                    { yPercent: isMobile ? 9 : 16, opacity: 0 },
-                    {
-                        yPercent: isMobile ? -9 : -16,
-                        opacity: 1,
-                        ease: 'none',
-                        scrollTrigger: {
-                            trigger: cardRef.current,
-                            start: 'top bottom',
-                            end: 'bottom top',
-                            scrub: 2.5,
-                            invalidateOnRefresh: true,
-                        },
-                    }
-                );
+                // FIX: opacity:0 as a fromTo from-state freezes the element
+                // invisible on mobile if the trigger fires while already in view.
+                gsap.set(midLayerRef.current, { yPercent: isMobile ? 9 : 16, opacity: isMobile ? 0.3 : 0 });
+                gsap.to(midLayerRef.current, {
+                    yPercent: isMobile ? -9 : -16,
+                    opacity: 1,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: cardRef.current,
+                        start: 'top bottom',
+                        end: 'bottom top',
+                        scrub: 2.5,
+                        invalidateOnRefresh: true,
+                    },
+                });
 
                 // 5 ── VIDEO ZOOM-IN on approach ────────────────────────────
                 gsap.fromTo(
@@ -317,6 +323,19 @@ const ServiceCard = ({ service, index, total }) => {
 
         return () => mm.revert();
     }, []);
+
+    // ── Force ScrollTrigger refresh after last card mounts ────────────────
+    // When the last card mounts, all pinSpacing divs from previous cards now
+    // exist in the DOM. A refresh recalculates every ScrollTrigger's position
+    // with the correct total page height, fixing animations on cards 2+.
+    useEffect(() => {
+        if (index !== total - 1) return;
+        // Delay to ensure all cards' useEffects have completed
+        const t = setTimeout(() => {
+            ScrollTrigger.refresh();
+        }, 100);
+        return () => clearTimeout(t);
+    }, [index, total]);
 
     // ── Lazy video load + play/pause ──────────────────────────────────────
     useEffect(() => {
