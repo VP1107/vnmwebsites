@@ -1,7 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { gsap, ScrollTrigger } from '../../gsap-config';
 
-
 const lines = [
     { text: 'First-year students.', accent: false },
     { text: 'Modern tools.', accent: false },
@@ -19,130 +18,145 @@ const DesignVideo = () => {
     const lineRefs = useRef([]);
 
     useEffect(() => {
-        if (!containerRef.current || !bgLayerRef.current || !gridRef.current || !overlayRef.current || !progressRef.current) return;
+        if (
+            !containerRef.current ||
+            !bgLayerRef.current ||
+            !gridRef.current ||
+            !overlayRef.current ||
+            !progressRef.current
+        ) return;
 
         const validLines = lineRefs.current.filter(Boolean);
         if (validLines.length === 0) return;
 
         const mm = gsap.matchMedia(containerRef);
 
-        mm.add({
-            isDesktop: "(min-width: 768px)",
-            isMobile: "(max-width: 767px)"
-        }, (context) => {
-            const { isDesktop } = context.conditions;
+        mm.add(
+            {
+                isDesktop: '(min-width: 1024px)',
+                isTablet: '(min-width: 768px) and (max-width: 1023px)',
+                isMobile: '(max-width: 767px)',
+            },
+            (context) => {
+                const { isDesktop, isTablet, isMobile } = context.conditions;
 
-            // 1. Initial State: Hide all lines immediately
-            gsap.set(validLines, { opacity: 0, y: 40, filter: 'blur(10px)' });
+                // ── Responsive values ──────────────────────────────────────
+                const pinSection  = isDesktop || isTablet;
+                const scrubSpeed  = isMobile ? 0.6 : 1;
+                const bgEnd       = isMobile ? '+=120%' : '+=200%';
+                const tlEnd       = isMobile ? '+=120%' : '+=150%';
+                const charYIn     = isMobile ? 24 : 40;
+                const charYOut    = isMobile ? -24 : -40;
+                const blurIn      = isMobile ? 'blur(6px)' : 'blur(10px)';
 
-            // 2. Main Timeline: Pins the section and orchestrates the lines
-            const tl = gsap.timeline({
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top top',
-                    end: '+=150%',
-                    pin: isDesktop ? true : false,
-                    pinSpacing: isDesktop ? true : false,
-                    scrub: 1, // Smooth scrubbing for text
-                    anticipatePin: 1,
-                    invalidateOnRefresh: true,
-                }
-            });
+                // BUG FIX: Set lines to hidden state immediately so they don't
+                // flash visible on page load before ScrollTrigger fires.
+                gsap.set(validLines, { opacity: 0, y: charYIn, filter: blurIn });
 
-            // 3. Lines Sequence
-            // We divide the timeline into equal slots for each line.
-            // Total lines = 4. 
-            // For each line: Fade In -> Stay -> Fade Out.
-            lines.forEach((_, i) => {
-                const el = lineRefs.current[i];
-                if (!el) return;
-
-                // In
-                tl.to(el, {
-                    opacity: 1,
-                    y: 0,
-                    filter: 'blur(0px)',
-                    duration: 1,
-                    ease: 'power2.out'
+                // 1. Main Timeline: pins the section and sequences lines
+                const tl = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: containerRef.current,
+                        start: 'top top',
+                        end: tlEnd,
+                        pin: pinSection,
+                        pinSpacing: pinSection,
+                        scrub: scrubSpeed,
+                        anticipatePin: 1,
+                        invalidateOnRefresh: true,
+                    },
                 });
 
-                // Stay visible for a bit
-                tl.to(el, { duration: 1 });
+                // 2. Lines Sequence — In → Stay → Out
+                lines.forEach((_, i) => {
+                    const el = lineRefs.current[i];
+                    if (!el) return;
 
-                // Out
-                tl.to(el, {
-                    opacity: 0,
-                    y: -40,
-                    filter: 'blur(10px)',
-                    duration: 1,
-                    ease: 'power2.in'
+                    tl.to(el, {
+                        opacity: 1,
+                        y: 0,
+                        filter: 'blur(0px)',
+                        duration: 1,
+                        ease: 'power2.out',
+                    });
+
+                    tl.to(el, { duration: isMobile ? 0.6 : 1 });
+
+                    tl.to(el, {
+                        opacity: 0,
+                        y: charYOut,
+                        filter: blurIn,
+                        duration: 1,
+                        ease: 'power2.in',
+                    });
                 });
-            });
 
-            // 4. Background Animations (Independent Parallax)
-            // These run in parallel to the pinned container scrub.
+                // 3. Video BG Zoom (independent parallax)
+                gsap.fromTo(
+                    bgLayerRef.current,
+                    { scale: 1, yPercent: 0 },
+                    {
+                        scale: isMobile ? 1.08 : 1.18,
+                        yPercent: isMobile ? -4 : -8,
+                        ease: 'none',
+                        scrollTrigger: {
+                            trigger: containerRef.current,
+                            start: 'top top',
+                            end: bgEnd,
+                            scrub: 2.5,
+                            invalidateOnRefresh: true,
+                        },
+                    }
+                );
 
-            // Video BG Zoom
-            gsap.fromTo(bgLayerRef.current,
-                { scale: 1, yPercent: 0 },
-                {
-                    scale: 1.18,
-                    yPercent: -8,
+                // 4. Grid Drift
+                gsap.fromTo(
+                    gridRef.current,
+                    { yPercent: 25, opacity: 0 },
+                    {
+                        yPercent: -25,
+                        opacity: isMobile ? 0.45 : 0.65,
+                        ease: 'none',
+                        scrollTrigger: {
+                            trigger: containerRef.current,
+                            start: 'top top',
+                            end: bgEnd,
+                            scrub: 3,
+                            invalidateOnRefresh: true,
+                        },
+                    }
+                );
+
+                // 5. Overlay Dimming
+                gsap.to(overlayRef.current, {
+                    opacity: isMobile ? 0.6 : 0.75,
                     ease: 'none',
                     scrollTrigger: {
                         trigger: containerRef.current,
                         start: 'top top',
-                        end: '+=200%',
-                        scrub: 2.5, // Different smoothness for depth feel
+                        end: '+=100%',
+                        scrub: 1,
                         invalidateOnRefresh: true,
-                    }
-                }
-            );
+                    },
+                });
 
-            // Grid Drift
-            gsap.fromTo(gridRef.current,
-                { yPercent: 25, opacity: 0 },
-                {
-                    yPercent: -25,
-                    opacity: 0.65,
+                // 6. Progress Bar
+                gsap.to(progressRef.current, {
+                    scaleX: 1,
                     ease: 'none',
                     scrollTrigger: {
                         trigger: containerRef.current,
                         start: 'top top',
-                        end: '+=200%',
-                        scrub: 3,
+                        end: bgEnd,
+                        // BUG FIX: scrub: 0 means no smoothing — the progress bar
+                        // jumps to match scroll position instantly which is correct
+                        // for a progress indicator.
+                        scrub: 0,
                         invalidateOnRefresh: true,
-                    }
-                }
-            );
-
-            // Overlay Dimming
-            gsap.to(overlayRef.current, {
-                opacity: 0.75,
-                ease: 'none',
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top top',
-                    end: '+=100%', // Fades in faster
-                    scrub: 1,
-                    invalidateOnRefresh: true,
-                }
-            });
-
-            // Progress Bar
-            gsap.to(progressRef.current, {
-                scaleX: 1,
-                ease: 'none',
-                scrollTrigger: {
-                    trigger: containerRef.current,
-                    start: 'top top',
-                    end: '+=200%',
-                    scrub: 0,
-                    invalidateOnRefresh: true,
-                }
-            });
-
-        }); // end matchMedia
+                    },
+                });
+            }
+        );
 
         return () => mm.revert();
     }, []);

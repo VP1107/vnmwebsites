@@ -1,48 +1,55 @@
 import { useEffect, useRef, useState } from 'react';
 import './Preloader.css';
 
-// ─── Tiny particle system drawn on canvas ───────────────────────────────────
+// ─── Particle system ──────────────────────────────────────────────────────────
 function initParticles(canvas) {
     const ctx = canvas.getContext('2d');
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    let W, H, particles, rafId;
+    let W, H, particles, isRunning = true;
+    // BUG FIX: Use an object ref for rafId so the IntersectionObserver closure
+    // always reads the current value. After cancelAnimationFrame the old integer
+    // is NOT null — so the plain `let rafId` pattern means `rafId === null`
+    // never re-triggers the draw loop after the first visibility pause.
+    const raf = { id: null };
 
     function resize() {
-        W = window.innerWidth;
-        H = window.innerHeight;
-        canvas.width = W * dpr;
-        canvas.height = H * dpr;
-        canvas.style.width = W + 'px';
-        canvas.style.height = H + 'px';
+        W = canvas.width  = window.innerWidth  * dpr;
+        H = canvas.height = window.innerHeight * dpr;
+        canvas.style.width  = window.innerWidth  + 'px';
+        canvas.style.height = window.innerHeight + 'px';
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.scale(dpr, dpr);
+        // Re-assign W/H to logical (CSS) pixels for particle math
+        W = window.innerWidth;
+        H = window.innerHeight;
     }
 
     function createParticles() {
         const count = window.innerWidth < 768 ? 60 : 120;
         particles = Array.from({ length: count }, () => ({
-            x: Math.random() * W,
-            y: Math.random() * H,
-            vx: (Math.random() - 0.5) * 0.4,
-            vy: (Math.random() - 0.5) * 0.4,
-            size: Math.random() * 1.5 + 0.3,
+            x:     Math.random() * W,
+            y:     Math.random() * H,
+            vx:    (Math.random() - 0.5) * 0.4,
+            vy:    (Math.random() - 0.5) * 0.4,
+            size:  Math.random() * 1.5 + 0.3,
             alpha: Math.random() * 0.5 + 0.1,
             color: Math.random() > 0.6 ? '#38bdf8' : '#ffffff',
         }));
     }
 
     function draw() {
-        rafId = requestAnimationFrame(draw);
+        // BUG FIX: The original Preloader particle loop had NO isRunning guard
+        // and no IntersectionObserver, so it ran forever even when the preloader
+        // was not visible (e.g. during the exit fade). This wastes CPU the entire
+        // time the rest of the page is loading below the fold.
+        if (!isRunning) { raf.id = null; return; }
+        raf.id = requestAnimationFrame(draw);
         ctx.clearRect(0, 0, W, H);
 
         particles.forEach(p => {
-            p.x += p.vx;
-            p.y += p.vy;
-            if (p.x < 0) p.x = W;
-            if (p.x > W) p.x = 0;
-            if (p.y < 0) p.y = H;
-            if (p.y > H) p.y = 0;
-
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+            if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
             ctx.globalAlpha = p.alpha;
             ctx.fillStyle = p.color;
             ctx.beginPath();
@@ -56,20 +63,27 @@ function initParticles(canvas) {
     createParticles();
     draw();
 
-    // ✅ FIX: Store handler reference for proper cleanup
-    const resizeHandler = () => { 
-        resize(); 
-        createParticles(); 
-    };
+    const resizeHandler = () => { resize(); createParticles(); };
     window.addEventListener('resize', resizeHandler, { passive: true });
 
+    // BUG FIX: Add an IntersectionObserver so the loop pauses automatically
+    // when the preloader is hidden/exiting, consistent with Hero's particle system.
+    const observer = new IntersectionObserver(([entry]) => {
+        isRunning = entry.isIntersecting;
+        if (isRunning && raf.id === null) draw();
+    }, { threshold: 0.1 });
+    observer.observe(canvas);
+
     return () => {
-        cancelAnimationFrame(rafId);
+        isRunning = false;
+        cancelAnimationFrame(raf.id);
+        raf.id = null;
         window.removeEventListener('resize', resizeHandler);
+        observer.disconnect();
     };
 }
 
-// ─── Status messages cycling during load ─────────────────────────────────────
+// ─── Status messages ──────────────────────────────────────────────────────────
 const STATUS_MESSAGES = [
     'INITIALIZING',
     'LOADING ASSETS',
@@ -80,14 +94,14 @@ const STATUS_MESSAGES = [
 // ─── Component ────────────────────────────────────────────────────────────────
 const Preloader = ({ isLoading }) => {
     const [shouldRender, setShouldRender] = useState(true);
-    const [progress, setProgress] = useState(0);
-    const [statusIndex, setStatusIndex] = useState(0);
+    const [progress, setProgress]         = useState(0);
+    const [statusIndex, setStatusIndex]   = useState(0);
 
-    const canvasRef = useRef(null);
-    const fillRef = useRef(null);
-    const progressRef = useRef(0);   // live value without triggering re-renders
-    const rafRef = useRef(null);
-    const cleanupParticles = useRef(null);
+    const canvasRef            = useRef(null);
+    const fillRef              = useRef(null);
+    const progressRef          = useRef(0);   // live value without triggering re-renders
+    const rafRef               = useRef(null);
+    const cleanupParticles     = useRef(null);
 
     // ── Scroll lock ───────────────────────────────────────────────────────────
     useEffect(() => {
@@ -115,23 +129,18 @@ const Preloader = ({ isLoading }) => {
     }, []);
 
     // ── Smooth progress animation ─────────────────────────────────────────────
-    // Drives the bar toward a "fake" target that advances quickly at first,
-    // then slows near 90 %, and snaps to 100 when isLoading becomes false.
     useEffect(() => {
         let fakeTarget = 0;
         let statusTimer;
 
-        // Advance fake target
         const advanceTarget = () => {
             if (isLoading) {
-                // Ease toward 90 % but never quite reach it while still loading
                 fakeTarget = Math.min(fakeTarget + (90 - fakeTarget) * 0.015, 89);
             } else {
                 fakeTarget = 100;
             }
         };
 
-        // RAF loop — smoothly interpolates current value toward target
         const tick = () => {
             advanceTarget();
             const diff = fakeTarget - progressRef.current;
@@ -140,7 +149,6 @@ const Preloader = ({ isLoading }) => {
             const rounded = Math.min(Math.round(progressRef.current), 100);
             setProgress(rounded);
 
-            // Move fill bar directly for silky animation without React re-render
             if (fillRef.current) {
                 fillRef.current.style.width = progressRef.current + '%';
             }
@@ -152,7 +160,6 @@ const Preloader = ({ isLoading }) => {
 
         rafRef.current = requestAnimationFrame(tick);
 
-        // Cycle status messages every ~600 ms
         statusTimer = setInterval(() => {
             setStatusIndex(i => (i + 1) % STATUS_MESSAGES.length);
         }, 600);
@@ -189,18 +196,22 @@ const Preloader = ({ isLoading }) => {
             <div className="preloader__content">
                 {/* Logo */}
                 <div className="preloader__logo" aria-hidden="true">
-                    <span className="preloader__logo-main">V&M</span>
+                    <span className="preloader__logo-main">V&amp;M</span>
                     <span className="preloader__logo-sub">CREATIONS</span>
                 </div>
 
                 {/* Progress */}
                 <div className="preloader__progress-area">
-                    {/* Bar */}
-                    <div className="preloader__bar-track" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+                    <div
+                        className="preloader__bar-track"
+                        role="progressbar"
+                        aria-valuenow={progress}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                    >
                         <div ref={fillRef} className="preloader__bar-fill" />
                     </div>
 
-                    {/* Labels row */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
                         <span className="preloader__status">
                             {STATUS_MESSAGES[statusIndex]}

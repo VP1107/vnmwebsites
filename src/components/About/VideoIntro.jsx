@@ -18,160 +18,223 @@ const VideoIntro = () => {
 
   useEffect(() => {
     if (!containerRef.current) return;
+
     const mm = gsap.matchMedia(containerRef);
 
-    mm.add({
-      isDesktop: "(min-width: 768px)",
-      isMobile: "(max-width: 767px)"
-    }, (context) => {
-      const { isDesktop } = context.conditions;
+    mm.add(
+      {
+        isDesktop: '(min-width: 1024px)',
+        isTablet: '(min-width: 768px) and (max-width: 1023px)',
+        isMobile: '(max-width: 767px)',
+      },
+      (context) => {
+        const { isDesktop, isTablet, isMobile } = context.conditions;
 
-      /* ── PIN for 1× scroll height ── */
-      if (isDesktop) {
-        ScrollTrigger.create({
-          trigger: containerRef.current,
-          start: 'top top',
-          end: '+=100%',
-          pin: true,
-          pinSpacing: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        });
-      }
+        // ── Responsive values ──────────────────────────────────────────────
+        const pinSection   = isDesktop || isTablet;
+        const scrubSpeed   = isMobile ? 0.6 : 2;
+        const gridOpacity  = isMobile ? 0.45 : 0.7;
+        const ruleEnd      = isMobile ? '+=25%' : '+=40%';
+        const headingEnd   = isMobile ? '+=40%' : '+=60%';
+        const scanEnd      = isMobile ? '+=20%' : '+=30%';
 
-      /* ── LAYER 1: Video slow zoom-out ── */
-      gsap.fromTo(bgLayerRef.current,
-        { scale: 1.3 },
-        {
-          scale: 1, ease: 'none',
-          scrollTrigger: {
+        // ── PIN ────────────────────────────────────────────────────────────
+        if (pinSection) {
+          ScrollTrigger.create({
             trigger: containerRef.current,
-            start: 'top top', end: '+=100%',
-            scrub: 2, invalidateOnRefresh: true,
-          }
+            start: 'top top',
+            end: '+=100%',
+            pin: true,
+            pinSpacing: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+          });
         }
-      );
 
-      /* ── LAYER 2: Grid drifts upward ── */
-      gsap.fromTo(gridRef.current,
-        { yPercent: 22, opacity: 0 },
-        {
-          yPercent: -22, opacity: 0.7, ease: 'none',
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: 'top top', end: '+=100%',
-            scrub: 2.8, invalidateOnRefresh: true,
+        // ── LAYER 1: Video slow zoom-out ───────────────────────────────────
+        gsap.fromTo(
+          bgLayerRef.current,
+          { scale: isMobile ? 1.15 : 1.3 },
+          {
+            scale: 1,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: 'top top',
+              end: '+=100%',
+              scrub: scrubSpeed,
+              invalidateOnRefresh: true,
+            },
           }
-        }
-      );
+        );
 
-      /* ── OVERLAY lightens mid-scroll ── */
-      gsap.fromTo(overlayRef.current,
-        { opacity: 0.92 },
-        {
-          opacity: 0.5, ease: 'none',
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: 'top top', end: '+=50%',
-            scrub: 1, invalidateOnRefresh: true,
+        // ── LAYER 2: Grid drifts upward ────────────────────────────────────
+        gsap.fromTo(
+          gridRef.current,
+          { yPercent: isMobile ? 12 : 22, opacity: 0 },
+          {
+            yPercent: isMobile ? -12 : -22,
+            opacity: gridOpacity,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: 'top top',
+              end: '+=100%',
+              scrub: 2.8,
+              invalidateOnRefresh: true,
+            },
           }
-        }
-      );
+        );
 
-      /* ── SCAN LINE sweeps down on entry ── */
-      gsap.fromTo(scanRef.current,
-        { yPercent: -105, opacity: 1 },
-        {
-          yPercent: 210, opacity: 0, ease: 'none',
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: 'top top', end: '+=30%',
-            scrub: 0.8, invalidateOnRefresh: true,
+        // ── OVERLAY lightens mid-scroll ────────────────────────────────────
+        gsap.fromTo(
+          overlayRef.current,
+          { opacity: 0.92 },
+          {
+            opacity: isMobile ? 0.65 : 0.5,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: 'top top',
+              end: '+=50%',
+              scrub: 1,
+              invalidateOnRefresh: true,
+            },
           }
-        }
-      );
+        );
 
-      /* ── LABEL: SplitType chars stagger in ── */
-      splitL.current = new SplitType(labelRef.current, { types: 'chars' });
-      // BUG FIX: gsap.from() with scrollTrigger does NOT set initial state
-      // until the trigger fires — so chars are visible before scroll reaches them.
-      // gsap.set() immediately hides them before any trigger fires.
-      if (splitL.current.chars && splitL.current.chars.length > 0) {
-        gsap.set(splitL.current.chars, { y: 20, opacity: 0 });
-        gsap.to(splitL.current.chars, {
-          y: 0, opacity: 1, stagger: 0.025, duration: 0.6, ease: 'power2.out',
+        // ── SCAN LINE sweeps down on entry ─────────────────────────────────
+        // BUG FIX: On mobile the scan line was still animating even with
+        // pinSection=false, which caused a jarring double-movement since the
+        // section scrolls naturally. Reduce yPercent range on mobile so it
+        // stays within the viewport during natural scroll.
+        gsap.fromTo(
+          scanRef.current,
+          { yPercent: -105, opacity: 1 },
+          {
+            yPercent: isMobile ? 105 : 210,
+            opacity: 0,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: 'top top',
+              end: scanEnd,
+              scrub: 0.8,
+              invalidateOnRefresh: true,
+            },
+          }
+        );
+
+        // ── LABEL: SplitType chars stagger in ─────────────────────────────
+        // Revert any previous split before re-splitting (breakpoint change safety)
+        splitL.current?.revert();
+        splitL.current = new SplitType(labelRef.current, { types: 'chars' });
+
+        if (splitL.current.chars && splitL.current.chars.length > 0) {
+          // BUG FIX (already noted in original): gsap.set() hides chars
+          // immediately so they don't flash before the trigger fires.
+          gsap.set(splitL.current.chars, { y: isMobile ? 14 : 20, opacity: 0 });
+          gsap.to(splitL.current.chars, {
+            y: 0,
+            opacity: 1,
+            stagger: 0.025,
+            duration: isMobile ? 0.45 : 0.6,
+            ease: 'power2.out',
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: 'top top',
+              toggleActions: 'play none none none',
+              invalidateOnRefresh: true,
+            },
+          });
+        }
+
+        // ── RULE: scrub draw left → right ──────────────────────────────────
+        gsap.fromTo(
+          ruleRef.current,
+          { scaleX: 0 },
+          {
+            scaleX: 1,
+            ease: 'none',
+            transformOrigin: 'left center',
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: 'top top',
+              end: ruleEnd,
+              scrub: 0.9,
+              invalidateOnRefresh: true,
+            },
+          }
+        );
+
+        // ── HEADING: SplitType words+chars scrub clip-reveal ──────────────
+        // Revert any previous split before re-splitting (breakpoint change safety)
+        splitH.current?.revert();
+        splitH.current = new SplitType(headingRef.current, { types: 'words,chars' });
+
+        if (splitH.current.words && splitH.current.words.length > 0) {
+          splitH.current.words.forEach((w) => {
+            w.style.display       = 'inline-block';
+            w.style.whiteSpace    = 'nowrap';
+            w.style.overflow      = 'hidden';
+            w.style.verticalAlign = 'bottom';
+          });
+        }
+
+        if (splitH.current.chars && splitH.current.chars.length > 0) {
+          splitH.current.chars.forEach((c) => {
+            c.style.display       = 'inline-block';
+            c.style.verticalAlign = 'bottom';
+            c.style.willChange    = 'transform';
+          });
+
+          // BUG FIX (already noted in original): set "from" state immediately
+          // so heading is invisible on load and only reveals on scroll.
+          gsap.set(splitH.current.chars, { y: '115%', opacity: 0 });
+
+          gsap.fromTo(
+            splitH.current.chars,
+            { y: '115%', opacity: 0 },
+            {
+              y: '0%',
+              opacity: 1,
+              stagger: isMobile ? 0.01 : 0.014,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: containerRef.current,
+                start: 'top top',
+                end: headingEnd,
+                scrub: 0.8,
+                invalidateOnRefresh: true,
+              },
+            }
+          );
+        }
+
+        // ── SCROLL HINT fades out as you scroll ────────────────────────────
+        gsap.to(scrollHintRef.current, {
+          opacity: 0,
+          y: isMobile ? 8 : 12,
+          ease: 'none',
           scrollTrigger: {
             trigger: containerRef.current,
             start: 'top top',
-            toggleActions: 'play none none none',
+            end: '+=15%',
+            scrub: 1,
             invalidateOnRefresh: true,
-          }
+          },
         });
+
+        // Cleanup SplitType on breakpoint change
+        return () => {
+          splitH.current?.revert();
+          splitL.current?.revert();
+        };
       }
-
-      /* ── RULE: scrub draw left→right ── */
-      gsap.fromTo(ruleRef.current,
-        { scaleX: 0 },
-        {
-          scaleX: 1, ease: 'none', transformOrigin: 'left center',
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: 'top top', end: '+=40%',
-            scrub: 0.9, invalidateOnRefresh: true,
-          }
-        }
-      );
-
-      /* ── HEADING: SplitType words+chars scrub clip-reveal ── */
-      splitH.current = new SplitType(headingRef.current, { types: 'words,chars' });
-
-      if (splitH.current.words && splitH.current.words.length > 0) {
-        splitH.current.words.forEach(w => {
-          w.style.display = 'inline-block';
-          w.style.whiteSpace = 'nowrap';
-          w.style.overflow = 'hidden';
-          w.style.verticalAlign = 'bottom';
-        });
-      }
-
-      if (splitH.current.chars && splitH.current.chars.length > 0) {
-        splitH.current.chars.forEach(c => {
-          c.style.display = 'inline-block';
-          c.style.verticalAlign = 'bottom';
-          c.style.willChange = 'transform';
-        });
-        // BUG FIX: set chars to their "from" state immediately so heading is
-        // invisible on page load, only revealed as user scrolls into trigger zone.
-        gsap.set(splitH.current.chars, { y: '115%', opacity: 0 });
-        gsap.fromTo(splitH.current.chars,
-          { y: '115%', opacity: 0 },
-          {
-            y: '0%', opacity: 1, stagger: 0.014, ease: 'none',
-            scrollTrigger: {
-              trigger: containerRef.current,
-              start: 'top top', end: '+=60%',
-              scrub: 0.8, invalidateOnRefresh: true,
-            }
-          }
-        );
-      }
-
-      /* ── SCROLL HINT fades out as you scroll ── */
-      gsap.to(scrollHintRef.current, {
-        opacity: 0, y: 12, ease: 'none',
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: 'top top', end: '+=15%',
-          scrub: 1, invalidateOnRefresh: true,
-        }
-      });
-
-    }); // end matchMedia
+    );
 
     return () => {
       mm.revert();
-      splitH.current?.revert();
-      splitL.current?.revert();
     };
   }, []);
 
